@@ -64,10 +64,6 @@ class MainActivity : SimpleActivity() {
             }
         }
 
-        if (checkAppSideloading()) {
-            return
-        }
-
         clearAllMessagesIfNeeded()
     }
 
@@ -263,7 +259,7 @@ class MainActivity : SimpleActivity() {
     }
 
     private fun initMessenger() {
-        checkWhatsNewDialog()
+//        checkWhatsNewDialog()
         storeStateVariables()
         getCachedConversations()
 
