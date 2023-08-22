@@ -16,12 +16,12 @@ android {
     compileSdkVersion 33
 
     defaultConfig {
-        applicationId "com.simplemobiletools.smsmessenger"
+        applicationId "ru.warr1on.simplesmsforwarding"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 79
-        versionName "5.18.2"
-        setProperty("archivesBaseName", "sms-messenger")
+        versionCode 1
+        versionName "0.0.1"
+        setProperty("archivesBaseName", "sms-forwarding")
     }
 
     signingConfigs {
