@@ -22,6 +22,7 @@ import com.simplemobiletools.smsmessenger.R
 import com.simplemobiletools.smsmessenger.adapters.ConversationsAdapter
 import com.simplemobiletools.smsmessenger.adapters.SearchResultsAdapter
 import com.simplemobiletools.smsmessenger.extensions.*
+import ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.MessageForwardingActivity
 import com.simplemobiletools.smsmessenger.helpers.*
 import com.simplemobiletools.smsmessenger.models.Conversation
 import com.simplemobiletools.smsmessenger.models.Events
@@ -166,6 +167,7 @@ class MainActivity : SimpleActivity() {
                 R.id.show_archived -> launchArchivedConversations()
                 R.id.settings -> launchSettings()
                 R.id.about -> launchAbout()
+                R.id.forwarding -> launchForwardingScreen()
                 else -> return@setOnMenuItemClickListener false
             }
             return@setOnMenuItemClickListener true
@@ -578,6 +580,11 @@ class MainActivity : SimpleActivity() {
         }
 
         startAboutActivity(R.string.app_name, licenses, BuildConfig.VERSION_NAME, faqItems, true)
+    }
+
+    private fun launchForwardingScreen() {
+        hideKeyboard()
+        startActivity(Intent(applicationContext, MessageForwardingActivity::class.java))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

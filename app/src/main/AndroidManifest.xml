@@ -52,6 +52,11 @@
             android:exported="true" />
 
         <activity
+            android:name="ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.MessageForwardingActivity"
+            android:configChanges="orientation"
+            android:exported="false" />
+
+        <activity
             android:name=".activities.RecycleBinConversationsActivity"
             android:configChanges="orientation"
             android:exported="true"
