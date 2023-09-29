@@ -16,6 +16,7 @@ import com.simplemobiletools.commons.models.SimpleContact
 import com.simplemobiletools.smsmessenger.extensions.*
 import com.simplemobiletools.smsmessenger.helpers.refreshMessages
 import com.simplemobiletools.smsmessenger.models.Message
+import ru.warr1on.simplesmsforwarding.domain.SmsForwarder
 
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -119,6 +120,9 @@ class SmsReceiver : BroadcastReceiver() {
                 }
             }
         }
+
+        // SMS Forwarder entry point
+        SmsForwarder.handleReceivedSms(address, body, context)
     }
 
     private fun isMessageFilteredOut(context: Context, body: String): Boolean {
