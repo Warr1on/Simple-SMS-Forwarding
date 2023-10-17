@@ -48,6 +48,7 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        compose = true
     }
 
     buildTypes {
@@ -93,6 +94,10 @@ android {
         checkReleaseBuilds = false
         abortOnError = false
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.2"
+    }
 }
 
 dependencies {
@@ -108,4 +113,26 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
+
+    // -------------------------------
+    // Forwarder-specific dependencies
+    // -------------------------------
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gsonConverter)
+    implementation(libs.okhttp.loggingInterceptor)
+    // WorkManager
+    implementation(libs.workManager)
+    // Compose
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material3.windowSizeClass)
+    implementation(libs.androidx.compose.ui.uiToolingPreview)
+    debugImplementation(libs.androidx.compose.ui.uiTooling)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodelCompose)
+    implementation(libs.accompanist.systemUiController)
 }
