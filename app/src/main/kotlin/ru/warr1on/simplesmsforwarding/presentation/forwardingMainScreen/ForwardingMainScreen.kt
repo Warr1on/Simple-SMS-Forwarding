@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.compose.AppTheme
+import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
