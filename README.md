@@ -1,6 +1,7 @@
 # Simple SMS Forwarding
 
-This is a fork of a Simple SMS Messenger that's created with the goal of implementing the functionality of being able to automatically forward SMS messages that meet a certain user-defined criteria to a chat bot.
+This is a fork of the Simple SMS Messenger that's created with the goal of implementing the functionality of being able to automatically forward incoming SMS messages that meet a certain user-defined criteria to a Telegram chat bot.
+As of now, this is currently a WIP project without really much to see.
 
 # Simple SMS Messenger (original readme)
 <img alt="Logo" src="graphics/icon.png" width="120" />
