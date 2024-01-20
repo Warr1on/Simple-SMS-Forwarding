@@ -363,6 +363,7 @@ private class ModalBottomSheetStateExperimental(
      * когда bottom sheet меняет свои координаты, чтобы в соответствии с изменениями обновлять
      * [visibilityFraction].
      */
+    @OptIn(ExperimentalMaterialApi::class)
     fun recalculateVisibilityFraction(sheetHeight: Float, containerHeight: Float) {
         // Чтобы получить фракцию видимости, от полной высоты шита нужно отнять
         // положительный оффсет шита по высоте относительно своей самой верхней позиции
