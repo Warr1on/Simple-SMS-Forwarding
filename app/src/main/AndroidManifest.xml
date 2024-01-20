@@ -54,9 +54,10 @@
             android:exported="true" />
 
         <activity
-            android:name="ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.MessageForwardingActivity"
+            android:name="ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.ui.MessageForwardingActivity"
             android:configChanges="orientation"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".activities.RecycleBinConversationsActivity"

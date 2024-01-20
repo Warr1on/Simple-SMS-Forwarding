@@ -23,7 +23,7 @@ import com.simplemobiletools.smsmessenger.adapters.ConversationsAdapter
 import com.simplemobiletools.smsmessenger.adapters.SearchResultsAdapter
 import com.simplemobiletools.smsmessenger.databinding.ActivityMainBinding
 import com.simplemobiletools.smsmessenger.extensions.*
-import ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.MessageForwardingActivity
+import ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.ui.MessageForwardingActivity
 import com.simplemobiletools.smsmessenger.helpers.*
 import com.simplemobiletools.smsmessenger.models.Conversation
 import com.simplemobiletools.smsmessenger.models.Events

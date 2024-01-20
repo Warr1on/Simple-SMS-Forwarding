@@ -128,11 +128,18 @@ dependencies {
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
+    implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.windowSizeClass)
     implementation(libs.androidx.compose.ui.uiToolingPreview)
     debugImplementation(libs.androidx.compose.ui.uiTooling)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.accompanist.systemUiController)
+    // Koin
+    implementation(libs.bundles.koin)
+//    implementation(libs.koin.android)
+//    implementation(libs.koin.androidx.compose)
+//    implementation(libs.koin.androidx.compose.navigation)
 }

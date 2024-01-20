@@ -5,6 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.example.compose.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -94,11 +95,11 @@ fun AppTheme(
 
     DisposableEffect(systemUiController, useDarkIcons) {
         systemUiController.setStatusBarColor(
-            color = colors.secondaryContainer,
+            color = Color.Transparent,
             darkIcons = useDarkIcons
         )
         systemUiController.setNavigationBarColor(
-            color = colors.background,
+            color = Color.Transparent,
             darkIcons = useDarkIcons
         )
 

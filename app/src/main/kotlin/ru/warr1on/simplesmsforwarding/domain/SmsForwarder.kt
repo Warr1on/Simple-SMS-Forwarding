@@ -1,12 +1,19 @@
 package ru.warr1on.simplesmsforwarding.domain
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.work.*
+import com.simplemobiletools.smsmessenger.R
 import retrofit2.HttpException
 import ru.warr1on.simplesmsforwarding.TestConstants
 import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsRequest
 import ru.warr1on.simplesmsforwarding.data.remote.service.FwdbotService
-import ru.warr1on.simplesmsforwarding.domain.model.ForwardingRule
+import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.domain.model.SmsMessage
 import java.util.UUID
 
@@ -49,6 +56,7 @@ object SmsForwarder {
         val inputData = packForwardingInfoIntoData(address, body, senderKey, messageTypeKey)
         val workManager = WorkManager.getInstance(context)
         val workRequest = OneTimeWorkRequestBuilder<ForwardSmsWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
             .addTag("smsForwardingWork#$taskID")
             .setInputData(inputData)
@@ -83,6 +91,46 @@ class ForwardSmsWorker(context: Context, params: WorkerParameters) : CoroutineWo
             return Result.failure()
         }
         return Result.success()
+    }
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        val context = applicationContext
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                1,
+                createNotification(context),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
+            )
+        } else {
+            ForegroundInfo(
+                1,
+                createNotification(context)
+            )
+        }
+    }
+
+    private fun createNotification(context: Context): Notification {
+        val channelId = "forwarding_channel_id"
+        val channelName = "Forwarding Channel"
+
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
+            .setContentTitle("Forwarding message...")
+            .setContentText("Sending received message to chatbot")
+            .setOngoing(true)
+            .setAutoCancel(true)
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+        return builder.build()
     }
 
     private fun prepareRequestFromData(data: Data): ForwardSmsRequest? {
