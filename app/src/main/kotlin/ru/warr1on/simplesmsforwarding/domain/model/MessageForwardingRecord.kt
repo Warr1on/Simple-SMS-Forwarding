@@ -1,6 +1,6 @@
 package ru.warr1on.simplesmsforwarding.domain.model
 
-data class SmsForwardingRecord(
+data class MessageForwardingRecord(
     val id: String,
     val messageAddress: String,
     val messageBody: String,

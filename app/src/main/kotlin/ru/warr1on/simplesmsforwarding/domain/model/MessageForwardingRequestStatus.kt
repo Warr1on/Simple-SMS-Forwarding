@@ -7,7 +7,7 @@ package ru.warr1on.simplesmsforwarding.domain.model
  * and if it did so successfully or only with partial success;
  * or
  */
-enum class SmsForwardingRequestStatus {
+enum class MessageForwardingRequestStatus {
 
     /** Request was fulfilled completely */
     SUCCESS,
