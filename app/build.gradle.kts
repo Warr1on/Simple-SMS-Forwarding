@@ -139,6 +139,8 @@ dependencies {
     implementation(libs.accompanist.systemUiController)
     // Koin
     implementation(libs.bundles.koin)
+    // DataStore
+    implementation(libs.androidx.datastore.datastorePreferences)
 //    implementation(libs.koin.android)
 //    implementation(libs.koin.androidx.compose)
 //    implementation(libs.koin.androidx.compose.navigation)

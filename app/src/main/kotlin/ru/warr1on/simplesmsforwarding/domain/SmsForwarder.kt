@@ -12,7 +12,7 @@ import com.simplemobiletools.smsmessenger.R
 import retrofit2.HttpException
 import ru.warr1on.simplesmsforwarding.TestConstants
 import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsRequest
-import ru.warr1on.simplesmsforwarding.data.remote.service.FwdbotService
+import ru.warr1on.simplesmsforwarding.data.remote.api.FwdbotApi
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.domain.model.SmsMessage
 import java.util.UUID
@@ -82,7 +82,7 @@ object SmsForwarder {
 class ForwardSmsWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val remoteService = FwdbotService.get()
+        val remoteService = FwdbotApi.get()
         val request = prepareRequestFromData(inputData) ?: return Result.failure()
         try {
             val response = remoteService.postSmsForwardingRequest(request)
@@ -95,7 +95,13 @@ class ForwardSmsWorker(context: Context, params: WorkerParameters) : CoroutineWo
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
         val context = applicationContext
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            ForegroundInfo(
+                1,
+                createNotification(context),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING
+            )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ForegroundInfo(
                 1,
                 createNotification(context),
@@ -116,7 +122,7 @@ class ForwardSmsWorker(context: Context, params: WorkerParameters) : CoroutineWo
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle("Forwarding message...")
-            .setContentText("Sending received message to chatbot")
+            .setContentText("Sending received message to a chatbot")
             .setOngoing(true)
             .setAutoCancel(true)
 

@@ -29,7 +29,7 @@ ez-vcard = "0.11.3"
 shortcut-badger = "1.1.22"
 #versioning
 app-version-appId = "com.simplemobiletools.smsmessenger"
-app-version-versionCode = "4"
+app-version-versionCode = "5"
 app-version-versionName = "0.0.1"
 
 # --------------------------------------
@@ -49,6 +49,8 @@ androidx-lifecycle-viewmodelCompose = "2.6.2"
 accompanist-systemUiController = "0.32.0"
 # Koin
 koin = "3.5.3"
+# DataStore
+datastore = "1.0.0"
 
 # --------------------------------------
 
@@ -96,8 +98,11 @@ androidx-lifecycle-viewmodelCompose = { module = "androidx.lifecycle:lifecycle-v
 accompanist-systemUiController = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist-systemUiController" }
 # Koin
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin"}
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 koin-androidx-compose-navigation = { module = "io.insert-koin:koin-androidx-compose-navigation", version.ref = "koin"}
+# DataStore
+androidx-datastore-datastorePreferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 
 # -------------------------------
 
@@ -109,6 +114,7 @@ room = [
 # Forwarder-specific dependency bundles
 koin = [
     "koin-android",
+    "koin-androidx-workmanager",
     "koin-androidx-compose",
     "koin-androidx-compose-navigation"
 ]

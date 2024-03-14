@@ -1,12 +1,20 @@
 package ru.warr1on.simplesmsforwarding.domain.mapping
 
+import ru.warr1on.simplesmsforwarding.data.local.model.*
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.FilterType
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingFilter
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
-import ru.warr1on.simplesmsforwarding.data.local.model.PersistedForwardingFilter
-import ru.warr1on.simplesmsforwarding.data.local.model.PersistedForwardingRule
-import ru.warr1on.simplesmsforwarding.data.local.model.PersistedForwardingRuleDescription
-import ru.warr1on.simplesmsforwarding.data.local.model.PersistedRuleAssociatedPhoneAddress
+import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRecord
+
+fun MessageForwardingRecord.mapToPersistedRecord(): PersistedMessageForwardingRecord {
+    return PersistedMessageForwardingRecord(
+        id = this.id,
+        messageAddress = this.messageAddress,
+        messageBody = this.messageBody,
+        isFulfilled = this.isFulfilled,
+        resultDescription = this.resultDescription
+    )
+}
 
 fun ForwardingRule.mapToPersistedCompleteRule(): PersistedForwardingRule {
 

@@ -265,6 +265,19 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
+        <!-- Forwarder-specific -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <!-- Disables the default WorkManager factory so that Koin could be used instead -->
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <activity-alias
             android:name=".activities.SplashActivity.Red"
             android:enabled="false"

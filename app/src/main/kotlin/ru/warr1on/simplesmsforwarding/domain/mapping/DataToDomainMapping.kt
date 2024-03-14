@@ -5,7 +5,19 @@ import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingFilter
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.data.local.model.PersistedForwardingFilter
 import ru.warr1on.simplesmsforwarding.data.local.model.PersistedForwardingRule
+import ru.warr1on.simplesmsforwarding.data.local.model.PersistedMessageForwardingRecord
 import ru.warr1on.simplesmsforwarding.data.local.model.PersistedRuleAssociatedPhoneAddress
+import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRecord
+
+fun PersistedMessageForwardingRecord.mapToMessageForwardingRecord(): MessageForwardingRecord {
+    return MessageForwardingRecord(
+        id = this.id,
+        messageAddress = this.messageAddress,
+        messageBody = this.messageBody,
+        isFulfilled = this.isFulfilled,
+        resultDescription = this.resultDescription
+    )
+}
 
 fun PersistedForwardingRule.mapToForwardingRule(): ForwardingRule {
     return ForwardingRule(

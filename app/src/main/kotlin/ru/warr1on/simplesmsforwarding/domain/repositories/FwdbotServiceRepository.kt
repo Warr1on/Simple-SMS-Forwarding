@@ -2,7 +2,7 @@ package ru.warr1on.simplesmsforwarding.domain.repositories
 
 import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsRequest
 import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsResponse
-import ru.warr1on.simplesmsforwarding.data.remote.service.FwdbotService
+import ru.warr1on.simplesmsforwarding.data.remote.api.FwdbotApi
 
 /**
  * This is a repo that allows the app to interact with the actual forwarding bot on the backend.
@@ -27,14 +27,14 @@ interface FwdbotServiceRepository {
 
     object Factory {
 
-        fun getDefaultRepo(apiService: FwdbotService): FwdbotServiceRepository {
+        fun getDefaultRepo(apiService: FwdbotApi): FwdbotServiceRepository {
             return FwdbotServiceRepositoryImpl(apiService)
         }
     }
 }
 
 private class FwdbotServiceRepositoryImpl(
-    private val apiService: FwdbotService
+    private val apiService: FwdbotApi
 ) : FwdbotServiceRepository {
 
     override suspend fun postSmsForwardingRequest(

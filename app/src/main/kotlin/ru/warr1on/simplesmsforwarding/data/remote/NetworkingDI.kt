@@ -11,33 +11,27 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.warr1on.simplesmsforwarding.TestConstants
 import ru.warr1on.simplesmsforwarding.core.di.DI
-import ru.warr1on.simplesmsforwarding.data.remote.service.FwdbotService
-import ru.warr1on.simplesmsforwarding.domain.repositories.FwdbotServiceRepository
+import ru.warr1on.simplesmsforwarding.data.remote.api.FwdbotApi
 import java.util.concurrent.TimeUnit
 
 object NetworkingQualifiers {
     const val loggingInterceptor = "logging_interceptor"
 }
 
-val DI.Qualifiers.networking: NetworkingQualifiers
+val DI.Qualifiers.Networking: NetworkingQualifiers
     get() = NetworkingQualifiers
 
 val DI.Modules.networking: Module
     get() {
 
-        val qualifiers = DI.Qualifiers.networking
+        val qualifiers = DI.Qualifiers.Networking
 
         return module {
-
-            // A repo for communicating with the forwarding backend service
-            single {
-                FwdbotServiceRepository.Factory.getDefaultRepo(get())
-            }
 
             // Retrofit API
             single {
                 val retrofit = get<Retrofit>()
-                return@single retrofit.create(FwdbotService::class.java)
+                return@single retrofit.create(FwdbotApi::class.java)
             }
 
             // Retrofit instance
