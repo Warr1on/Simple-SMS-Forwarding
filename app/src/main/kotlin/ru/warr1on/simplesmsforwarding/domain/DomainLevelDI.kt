@@ -13,13 +13,10 @@ import ru.warr1on.simplesmsforwarding.domain.repositories.MessageForwardingRecor
 import ru.warr1on.simplesmsforwarding.domain.services.messageForwarding.MessageForwardingService
 import ru.warr1on.simplesmsforwarding.domain.services.messageForwarding.MessageForwardingWorker
 
-//object DomainModules
-
 val DI.Modules.domain get() = module {
     includes(
         DI.Modules.repositories,
         DI.Modules.messageForwardingService
-//        DI.Modules.services
     )
 }
 
@@ -28,8 +25,7 @@ private val DI.Modules.repositories get() = module {
     single {
         ForwardingRulesRepository.Factory.getDefaultRepo(
             rulesDao = get(),
-            parentScope = get(),
-            ioDispatcher = get()
+            coroutineScope = get(named(DI.Qualifiers.Coroutines.generalIOCoroutineScope))
         )
     }
 
@@ -53,11 +49,8 @@ private val DI.Modules.messageForwardingService get() = module {
 
     single {
         MessageForwardingService(
-            //recordsRepo = get(),
             rulesRepo = get(),
             settingsRepo = get(),
-            //backendServiceRepo = get(),
-            //appContext = androidApplication(),
             coroutineScope = get(named(DI.Qualifiers.Coroutines.generalIOCoroutineScope))
         )
     }
@@ -70,7 +63,3 @@ private val DI.Modules.messageForwardingService get() = module {
         )
     }
 }
-
-//private val DI.Modules.services get() = module {
-//
-//}
