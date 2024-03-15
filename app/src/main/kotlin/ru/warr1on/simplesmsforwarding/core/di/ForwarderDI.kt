@@ -1,17 +1,18 @@
 package ru.warr1on.simplesmsforwarding.core.di
 
 import android.content.Context
+import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import org.koin.dsl.single
 import ru.warr1on.simplesmsforwarding.data.local.localData
 import ru.warr1on.simplesmsforwarding.data.remote.networking
 import ru.warr1on.simplesmsforwarding.domain.domain
@@ -54,7 +55,8 @@ val DI.Modules.core: Module
             includes(
                 DI.Modules.localData,
                 DI.Modules.networking,
-                DI.Modules.coroutines
+                DI.Modules.coroutines,
+                DI.Modules.work
             )
         }
     }
@@ -92,5 +94,12 @@ val DI.Modules.coroutines: Module get() = module {
 
     single(named(qualifiers.ioDispatcher)) {
         Dispatchers.IO
+    }
+}
+
+val DI.Modules.work: Module get() = module {
+
+    factory {
+        WorkManager.getInstance(androidApplication())
     }
 }

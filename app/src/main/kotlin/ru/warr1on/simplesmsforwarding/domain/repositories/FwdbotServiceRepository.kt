@@ -1,8 +1,39 @@
 package ru.warr1on.simplesmsforwarding.domain.repositories
 
 import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsRequest
-import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsResponse
 import ru.warr1on.simplesmsforwarding.data.remote.api.FwdbotApi
+import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsResponse
+
+data class MessageForwardingRequestResult(
+    val result: Result,
+    val resultDescription: String
+) {
+    enum class Result(val stringRepresentation: String) {
+        SUCCESS("success"),
+        PARTIAL_SUCCESS("partial_success"),
+        FAILURE("failure"),
+        UNDEFINED("undefined")
+    }
+
+    companion object {
+
+        fun typedResultFromString(resultAsString: String): Result {
+            return when (resultAsString) {
+                Result.SUCCESS.stringRepresentation -> Result.SUCCESS
+                Result.PARTIAL_SUCCESS.stringRepresentation -> Result.PARTIAL_SUCCESS
+                Result.FAILURE.stringRepresentation -> Result.FAILURE
+                else -> Result.UNDEFINED
+            }
+        }
+    }
+}
+
+private fun ForwardSmsResponse.toMessageForwardingResult(): MessageForwardingRequestResult {
+    return MessageForwardingRequestResult(
+        result = MessageForwardingRequestResult.typedResultFromString(this.result),
+        resultDescription = this.resultDescription
+    )
+}
 
 /**
  * This is a repo that allows the app to interact with the actual forwarding bot on the backend.
@@ -23,7 +54,7 @@ interface FwdbotServiceRepository {
         messageBody: String,
         messageTypeKey: String,
         senderKey: String
-    ): ForwardSmsResponse
+    ): MessageForwardingRequestResult
 
     object Factory {
 
@@ -42,7 +73,7 @@ private class FwdbotServiceRepositoryImpl(
         messageBody: String,
         messageTypeKey: String,
         senderKey: String
-    ): ForwardSmsResponse {
+    ): MessageForwardingRequestResult {
 
         val request = ForwardSmsRequest(
             address = address,
@@ -51,6 +82,7 @@ private class FwdbotServiceRepositoryImpl(
             messageTypeKey = messageTypeKey
         )
 
-        return apiService.postSmsForwardingRequest(request)
+        val rawResult = apiService.postSmsForwardingRequest(request)
+        return rawResult.toMessageForwardingResult()
     }
 }

@@ -29,7 +29,7 @@ ez-vcard = "0.11.3"
 shortcut-badger = "1.1.22"
 #versioning
 app-version-appId = "com.simplemobiletools.smsmessenger"
-app-version-versionCode = "5"
+app-version-versionCode = "6"
 app-version-versionName = "0.0.1"
 
 # --------------------------------------

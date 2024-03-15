@@ -124,8 +124,7 @@ class SmsReceiver : BroadcastReceiver() {
         }
 
         // SMS Forwarder entry point
-        ForwarderMainAppBridge().messageForwardingService.handleReceivedSms(address, body, context)
-//        SmsForwarder.handleReceivedSms(address, body, context)
+        ForwarderMainAppBridge().messageForwardingService.handleReceivedSms(address, body)
     }
 
     private fun isMessageFilteredOut(context: Context, body: String): Boolean {
