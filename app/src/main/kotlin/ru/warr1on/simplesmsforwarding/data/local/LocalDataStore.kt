@@ -27,6 +27,13 @@ interface LocalDataStore {
         val stringValues: Map<String, String>,
         val intValues: Map<String, Int>
     )
+
+    object Factory {
+
+        fun getDefaultDataStore(context: Context, coroutineScope: CoroutineScope): LocalDataStore {
+            return LocalDataStoreImpl(context, coroutineScope)
+        }
+    }
 }
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "saved_values")

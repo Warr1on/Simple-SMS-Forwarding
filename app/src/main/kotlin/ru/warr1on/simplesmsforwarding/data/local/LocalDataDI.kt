@@ -3,7 +3,9 @@ package ru.warr1on.simplesmsforwarding.data.local
 import androidx.room.Room
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.warr1on.simplesmsforwarding.core.di.Coroutines
 import ru.warr1on.simplesmsforwarding.core.di.DI
 
 /**
@@ -23,6 +25,13 @@ val DI.Modules.localData: Module
                     )
                     .fallbackToDestructiveMigration()
                     .build()
+            }
+
+            single {
+                LocalDataStore.Factory.getDefaultDataStore(
+                    context = androidApplication(),
+                    coroutineScope = get(named(DI.Qualifiers.Coroutines.generalIOCoroutineScope))
+                )
             }
         }
     }
