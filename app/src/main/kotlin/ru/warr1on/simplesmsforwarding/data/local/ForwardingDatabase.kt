@@ -29,27 +29,3 @@ abstract class ForwardingDatabase : RoomDatabase() {
         const val databaseName = "sms-forwarding-db"
     }
 }
-
-//    companion object {
-//
-//        const val databaseName = "sms-forwarding-db"
-//
-//        private var dbInstance: ForwardingDatabase? = null
-//
-//        fun instance(appContext: Context): ForwardingDatabase {
-//            val instance = dbInstance
-//            return if (instance != null) {
-//                instance
-//            } else {
-//                val database = Room.databaseBuilder(
-//                    appContext,
-//                    ForwardingDatabase::class.java,
-//                    databaseName
-//                ).build()
-//
-//                dbInstance = database
-//                database
-//            }
-//        }
-//    }
-//}
