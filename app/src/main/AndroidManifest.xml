@@ -54,7 +54,7 @@
             android:exported="true" />
 
         <activity
-            android:name="ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.ui.MessageForwardingActivity"
+            android:name="ru.warr1on.simplesmsforwarding.presentation.core.MessageForwardingActivity"
             android:configChanges="orientation"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />

@@ -1,4 +1,4 @@
-package ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.ui
+package ru.warr1on.simplesmsforwarding.presentation.core
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -16,7 +16,6 @@ class MessageForwardingActivity : AppCompatActivity() {
         setContent {
             AppTheme {
                 ModalHostExperimental {
-//                    MessageForwardingScreen()
                     NavigationContainer()
                 }
             }
