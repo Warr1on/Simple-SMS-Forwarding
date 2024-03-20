@@ -34,6 +34,5 @@ fun LazyListScope.verticalSpacer(height: Dp) = spacer(height = height)
  * Useful for spacing out row sections in LazyRow
  *
  * @param width Spacer width
- * @param height Spacer height
  */
 fun LazyListScope.horizontalSpacer(width: Dp) = spacer(width = width)
