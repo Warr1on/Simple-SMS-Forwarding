@@ -4,6 +4,6 @@ data class MessageForwardingRecord(
     val id: String,
     val messageAddress: String,
     val messageBody: String,
-    val isFulfilled: Boolean,
+    val status: MessageForwardingRequestStatus,
     val resultDescription: String
 )

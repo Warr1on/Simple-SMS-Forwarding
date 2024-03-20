@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.*
 import kotlinx.coroutines.flow.first
 import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRecord
+import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRequestStatus
 import ru.warr1on.simplesmsforwarding.domain.model.SmsMessage
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwarderSettingsRepository
@@ -163,7 +164,7 @@ class MessageInitialProcessingWorker(
             id = recordID,
             messageAddress = message.address,
             messageBody = message.body,
-            isFulfilled = false,
+            status = MessageForwardingRequestStatus.PENDING,
             resultDescription = ""
         )
         recordsRepo.addRecord(record)

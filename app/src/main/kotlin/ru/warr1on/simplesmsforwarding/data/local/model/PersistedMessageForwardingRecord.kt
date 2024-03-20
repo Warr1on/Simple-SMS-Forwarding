@@ -21,12 +21,16 @@ data class PersistedMessageForwardingRecord(
     @ColumnInfo(name = Keys.messageBody)
     val messageBody: String,
 
-    @ColumnInfo(name = Keys.isFulfilled)
-    val isFulfilled: Boolean,
+    @ColumnInfo(name = Keys.forwardingStatus)
+    val forwardingStatus: Status,
 
     @ColumnInfo(name = Keys.resultDescription)
     val resultDescription: String
 ) {
+    enum class Status {
+        PENDING, SUCCESS, PARTIAL_SUCCESS, FAILURE
+    }
+
     companion object {
         const val tableName = "message_forwarding_record"
     }
@@ -35,7 +39,7 @@ data class PersistedMessageForwardingRecord(
         const val id = "id"
         const val messageAddress = "msg_address"
         const val messageBody = "msg_body"
-        const val isFulfilled = "is_fulfilled"
+        const val forwardingStatus = "forwarding_status"
         const val resultDescription = "result_description"
     }
 }

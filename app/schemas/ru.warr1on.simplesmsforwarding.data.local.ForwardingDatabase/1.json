@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "6ee90aba5e193767a0c21fe70553443d",
+    "identityHash": "a083fcdd2152ce54d0ef1d96257f6c5d",
     "entities": [
       {
         "tableName": "message_forwarding_record",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `msg_address` TEXT NOT NULL, `msg_body` TEXT NOT NULL, `is_fulfilled` INTEGER NOT NULL, `result_description` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `msg_address` TEXT NOT NULL, `msg_body` TEXT NOT NULL, `forwarding_status` TEXT NOT NULL, `result_description` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -27,9 +27,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "isFulfilled",
-            "columnName": "is_fulfilled",
-            "affinity": "INTEGER",
+            "fieldPath": "forwardingStatus",
+            "columnName": "forwarding_status",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -187,7 +187,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6ee90aba5e193767a0c21fe70553443d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a083fcdd2152ce54d0ef1d96257f6c5d')"
     ]
   }
 }

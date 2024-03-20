@@ -11,6 +11,7 @@ import com.simplemobiletools.smsmessenger.R
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRecord
+import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRequestStatus
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwarderSettingsRepository
 import ru.warr1on.simplesmsforwarding.domain.repositories.FwdbotServiceRepository
 import ru.warr1on.simplesmsforwarding.domain.repositories.MessageForwardingRecordsRepository
@@ -241,9 +242,17 @@ class MessageForwardingWorker(
         record: MessageForwardingRecord,
         forwardingResult: MessageForwardingRequestResult
     ) {
-        val isFulfilled = forwardingResult.result != MessageForwardingRequestResult.Result.FAILURE
+        val forwardingStatus = when (forwardingResult.result) {
+            MessageForwardingRequestResult.Result.SUCCESS -> MessageForwardingRequestStatus.SUCCESS
+            MessageForwardingRequestResult.Result.PARTIAL_SUCCESS -> MessageForwardingRequestStatus.PARTIAL_SUCCESS
+            MessageForwardingRequestResult.Result.FAILURE -> MessageForwardingRequestStatus.FAILURE
+            MessageForwardingRequestResult.Result.UNDEFINED -> MessageForwardingRequestStatus.FAILURE
+            // If the result we got could not be identified and mapped into a predefined enum case,
+            // we're just gonna assume that the forwarding request had failed, as this should not
+            // happen under normal circumstances and clearly means something went wrong
+        }
         val updatedRecord = record.copy(
-            isFulfilled = isFulfilled,
+            status = forwardingStatus,
             resultDescription = forwardingResult.resultDescription
         )
         recordsRepo.updateRecord(updatedRecord)

@@ -5,13 +5,20 @@ import ru.warr1on.simplesmsforwarding.domain.model.filtering.FilterType
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingFilter
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRecord
+import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRequestStatus
 
 fun MessageForwardingRecord.mapToPersistedRecord(): PersistedMessageForwardingRecord {
+    val status = when (this.status) {
+        MessageForwardingRequestStatus.PENDING -> PersistedMessageForwardingRecord.Status.PENDING
+        MessageForwardingRequestStatus.SUCCESS -> PersistedMessageForwardingRecord.Status.SUCCESS
+        MessageForwardingRequestStatus.PARTIAL_SUCCESS -> PersistedMessageForwardingRecord.Status.PARTIAL_SUCCESS
+        MessageForwardingRequestStatus.FAILURE -> PersistedMessageForwardingRecord.Status.FAILURE
+    }
     return PersistedMessageForwardingRecord(
         id = this.id,
         messageAddress = this.messageAddress,
         messageBody = this.messageBody,
-        isFulfilled = this.isFulfilled,
+        forwardingStatus = status,
         resultDescription = this.resultDescription
     )
 }
