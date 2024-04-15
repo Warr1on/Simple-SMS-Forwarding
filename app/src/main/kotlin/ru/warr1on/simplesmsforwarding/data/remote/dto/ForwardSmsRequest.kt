@@ -14,5 +14,5 @@ data class ForwardSmsRequest(
     val senderKey: String,
 
     @SerializedName("type_key")
-    val messageTypeKey: String
+    val messageTypeKeys: List<String>
 )

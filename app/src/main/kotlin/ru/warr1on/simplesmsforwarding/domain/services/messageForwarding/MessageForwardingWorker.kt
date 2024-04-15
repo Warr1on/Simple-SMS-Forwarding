@@ -144,16 +144,11 @@ class MessageForwardingWorker(
         // Retrieving the message forwarding record and the sender key from the local storage
         val record = getMessageForwardingRecord(workerData.messageForwardingRecordID) ?: return Result.failure()
         val senderKey = getStoredSenderKey() ?: return Result.failure()
-        // TODO: Make a proper handling of having multiple message type keys.
-        //  The current implementation supports 1 key at max, as it's just what the current backend API supports.
-        //  This limits forwarding capability so that a message can't be forwarded according to multiple rules
-        //  simultaneously as one request. This would need to be fixed after the backend adapts according changes.
-        val messageTypeKey = workerData.messageTypeKeys.first()
 
         // Making an API call to the chatbot backend to forward the message
         val forwardingResult = forwardMessage(
             messageForwardingRecord = record,
-            messageTypeKey = messageTypeKey,
+            messageTypeKeys = workerData.messageTypeKeys,
             senderKey = senderKey
         )
 
@@ -216,14 +211,14 @@ class MessageForwardingWorker(
      */
     private suspend fun forwardMessage(
         messageForwardingRecord: MessageForwardingRecord,
-        messageTypeKey: String,
+        messageTypeKeys: List<String>,
         senderKey: String
     ): kotlin.Result<MessageForwardingRequestResult> {
         return try {
             val response = backendServiceRepo.postSmsForwardingRequest(
                 address = messageForwardingRecord.messageAddress,
                 messageBody = messageForwardingRecord.messageBody,
-                messageTypeKey = messageTypeKey,
+                messageTypeKeys = messageTypeKeys,
                 senderKey = senderKey
             )
             kotlin.Result.success(response)

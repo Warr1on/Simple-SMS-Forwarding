@@ -6,7 +6,9 @@ import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsResponse
 
 data class MessageForwardingRequestResult(
     val result: Result,
-    val resultDescription: String
+    val resultDescription: String,
+    val numberOfRecipients: Int? = null,
+    val recipients: List<String>? = null
 ) {
     enum class Result(val stringRepresentation: String) {
         SUCCESS("success"),
@@ -31,7 +33,9 @@ data class MessageForwardingRequestResult(
 private fun ForwardSmsResponse.toMessageForwardingResult(): MessageForwardingRequestResult {
     return MessageForwardingRequestResult(
         result = MessageForwardingRequestResult.typedResultFromString(this.result),
-        resultDescription = this.resultDescription
+        resultDescription = this.resultDescription,
+        numberOfRecipients = this.numberOfRecipients,
+        recipients = recipients
     )
 }
 
@@ -52,7 +56,7 @@ interface FwdbotServiceRepository {
     suspend fun postSmsForwardingRequest(
         address: String,
         messageBody: String,
-        messageTypeKey: String,
+        messageTypeKeys: List<String>,
         senderKey: String
     ): MessageForwardingRequestResult
 
@@ -71,7 +75,7 @@ private class FwdbotServiceRepositoryImpl(
     override suspend fun postSmsForwardingRequest(
         address: String,
         messageBody: String,
-        messageTypeKey: String,
+        messageTypeKeys: List<String>,
         senderKey: String
     ): MessageForwardingRequestResult {
 
@@ -79,7 +83,7 @@ private class FwdbotServiceRepositoryImpl(
             address = address,
             body = messageBody,
             senderKey = senderKey,
-            messageTypeKey = messageTypeKey
+            messageTypeKeys = messageTypeKeys
         )
 
         val rawResult = apiService.postSmsForwardingRequest(request)
