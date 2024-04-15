@@ -1,7 +1,13 @@
 package ru.warr1on.simplesmsforwarding.domain.services.messageForwarding
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.work.*
+import com.simplemobiletools.smsmessenger.R
 import kotlinx.coroutines.flow.first
 import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRecord
 import ru.warr1on.simplesmsforwarding.domain.model.MessageForwardingRequestStatus
@@ -186,5 +192,40 @@ class MessageInitialProcessingWorker(
             messageTypeKeys = forwardingList.map { it.typeKey }
         )
         MessageForwardingWorker.enqueue(workManager, workerData)
+    }
+
+
+    //--- Android <12 support for expedited work ---//
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        val context = applicationContext
+        return ForegroundInfo(
+            1,
+            createNotification(context)
+        )
+    }
+
+    private fun createNotification(context: Context): Notification {
+        val channelId = "forwarding_channel_id"
+        val channelName = "Forwarding Channel"
+
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
+            .setContentTitle("Forwarding message...")
+            .setContentText("Sending received message to a chatbot")
+            .setOngoing(true)
+            .setAutoCancel(true)
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+        return builder.build()
     }
 }
