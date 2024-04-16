@@ -33,7 +33,7 @@ private val DI.Modules.repositories get() = module {
     single {
         ForwarderSettingsRepository.Factory.getDefaultRepo(
             dataStore = get(),
-            coroutineScope = get()
+            coroutineScope = get(named(DI.Qualifiers.Coroutines.generalIOCoroutineScope))
         )
     }
 
@@ -42,7 +42,11 @@ private val DI.Modules.repositories get() = module {
     }
 
     single {
-        MessageForwardingRecordsRepository.Factory.getDefaultRepo(get(), get(), get())
+        MessageForwardingRecordsRepository.Factory.getDefaultRepo(
+            recordsDao = get(),
+            ioDispatcher = get(named(DI.Qualifiers.Coroutines.ioDispatcher)),
+            parentScope = get(named(DI.Qualifiers.Coroutines.generalIOCoroutineScope))
+        )
     }
 }
 
