@@ -135,6 +135,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.uiTooling)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
+    implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.accompanist.systemUiController)
     // Koin

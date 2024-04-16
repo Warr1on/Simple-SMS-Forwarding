@@ -10,12 +10,14 @@ import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
+import org.koin.core.logger.Level
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.warr1on.simplesmsforwarding.data.local.localData
 import ru.warr1on.simplesmsforwarding.data.remote.networking
 import ru.warr1on.simplesmsforwarding.domain.domain
+import ru.warr1on.simplesmsforwarding.presentation.presentation
 
 /**
  * A central point to access all the DI stuff, like modules and qualifiers.
@@ -43,7 +45,8 @@ object DI {
             workManagerFactory()
             modules(
                 Modules.core,
-                Modules.domain
+                Modules.domain,
+                Modules.presentation
             )
         }
     }
