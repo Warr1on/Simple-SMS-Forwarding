@@ -27,6 +27,14 @@ val DI.Modules.localData: Module
                     .build()
             }
 
+            factory {
+                get<ForwardingDatabase>().forwardingRulesDao()
+            }
+
+            factory {
+                get<ForwardingDatabase>().forwardingRequestDao()
+            }
+
             single {
                 LocalDataStore.Factory.getDefaultDataStore(
                     context = androidApplication(),
