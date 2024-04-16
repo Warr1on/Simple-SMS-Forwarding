@@ -2,6 +2,9 @@ package ru.warr1on.simplesmsforwarding.domain.model.filtering
 
 import ru.warr1on.simplesmsforwarding.domain.model.SmsMessage
 
+/**
+ * Forwarding filter type (inclusion/exclusion)
+ */
 enum class FilterType {
     INCLUDE, EXCLUDE
 }
