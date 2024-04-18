@@ -17,6 +17,8 @@ interface ForwardingRulesRepository {
 
     suspend fun getAllRules(): List<ForwardingRule>
 
+    suspend fun getRule(ruleID: String): ForwardingRule?
+
     suspend fun addRule(rule: ForwardingRule)
 
     suspend fun deleteRule(ruleID: String)
@@ -60,6 +62,10 @@ private class ForwardingRulesRepositoryImpl(
         val rules = rulesDao.getAllRules().map { it.mapToForwardingRule() }
         _forwardingRules.value = rules
         return rules
+    }
+
+    override suspend fun getRule(ruleID: String): ForwardingRule? {
+        return rulesDao.getRule(ruleID)?.mapToForwardingRule()
     }
 
     override suspend fun addRule(rule: ForwardingRule) {

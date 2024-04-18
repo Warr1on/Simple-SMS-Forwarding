@@ -30,6 +30,13 @@ abstract class ForwardingRulesDao {
     @Query("SELECT * FROM ${RuleDescription.tableName}")
     abstract suspend fun getAllRules(): List<PersistedForwardingRule>
 
+    /**
+     * Retrieves a forwarding rule with the specified [ruleID] if it exists
+     */
+    @Transaction
+    @Query("SELECT * FROM ${RuleDescription.tableName} WHERE ${RuleDescriptionKeys.id} = :ruleID LIMIT 1")
+    abstract suspend fun getRule(ruleID: String): PersistedForwardingRule?
+
     @Transaction
     @Query("")
     suspend fun insertRule(rule: PersistedForwardingRule) {
