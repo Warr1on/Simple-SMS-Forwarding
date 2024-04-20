@@ -8,8 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
@@ -239,7 +238,8 @@ fun ModalPopup(
         ) {
             // Поверхность, на которой будет рисоваться поп-ап
             Surface(
-                elevation = 24.dp,
+                tonalElevation = 2.dp,
+                shadowElevation = 24.dp,
                 shape = shape,
                 color = MaterialTheme.colorScheme.surface,
                 modifier = modifier
