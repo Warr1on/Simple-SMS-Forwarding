@@ -145,6 +145,7 @@ private class ModalPopupScopeInstance(
  * нажатием за его пределами либо системной кнопкой "назад"
  * @param key Ключ, идентифицирующий конкретно данный поп-ап
  * @param shape Форма поверхности, на которой будет отрисовываться контент поп-апа
+ * @param applyImePadding Если true, то добавляет контейнеру поп-апа IME-паддинг (софт-клавиатуры)
  * @param modifier Модификатор, применяемый к поверхности, на которой рисуется поп-ап
  * @param content Контент поп-апа. Имеет доступ к [ModalPopupScope]
  */
@@ -154,6 +155,7 @@ fun ModalPopup(
     isDismissibleOnOutsideAction: Boolean = true,
     key: String = remember { UUID.randomUUID().toString() },
     shape: Shape = RoundedCornerShape(24.dp),
+    applyImePadding: Boolean = false,
     modifier: Modifier = Modifier,
     content: @Composable ModalPopupScope.() -> Unit
 ) {
@@ -236,19 +238,26 @@ fun ModalPopup(
                 .fillMaxSize()
                 .alpha(fraction.coerceAtLeast(0.2f))
         ) {
+            val contentSurfaceModifier = modifier
+                .requiredSizeIn(
+                    minWidth = 0.dp,
+                    minHeight = 0.dp,
+                    maxWidth = maxWidth * 0.85f,
+                    maxHeight = maxHeight * 0.8f
+                ).let {
+                    when (applyImePadding) {
+                        true -> it.imePadding()
+                        false -> it
+                    }
+                }
+
             // Поверхность, на которой будет рисоваться поп-ап
             Surface(
                 tonalElevation = 2.dp,
                 shadowElevation = 24.dp,
                 shape = shape,
                 color = MaterialTheme.colorScheme.surface,
-                modifier = modifier
-                    .requiredSizeIn(
-                        minWidth = 0.dp,
-                        minHeight = 0.dp,
-                        maxWidth = maxWidth * 0.85f,
-                        maxHeight = maxHeight * 0.8f
-                    )
+                modifier = contentSurfaceModifier
             ) {
                 // Обеспечиваем анимацию поп-апа при показе/скрытии
                 AnimatedVisibility(
