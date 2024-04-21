@@ -13,14 +13,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ru.warr1on.simplesmsforwarding.domain.model.filtering.FilterType
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
-import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.model.ForwardingSettingsScreenModel
-import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.model.ForwardingSettingsScreenModel.ForwardingFilter.FilterType.*
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel.ForwardingFilter.FilterType.*
 
 @Composable
 fun ForwardingFilterCompactView(
-    filter: ForwardingSettingsScreenModel.ForwardingFilter,
+    filter: PresentationModel.ForwardingFilter,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -74,7 +73,7 @@ private fun ForwardingFilterCompactView_Preview() {
             .padding(16.dp)
         ) {
             ForwardingFilterCompactView(
-                filter = ForwardingSettingsScreenModel.ForwardingFilter(
+                filter = PresentationModel.ForwardingFilter(
                     id = "",
                     filterType = INCLUDE,
                     text = "Some SMS text that should be included",

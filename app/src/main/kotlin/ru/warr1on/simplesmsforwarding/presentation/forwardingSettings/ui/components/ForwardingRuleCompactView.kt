@@ -3,11 +3,9 @@ package ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ui.compon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -15,12 +13,12 @@ import androidx.compose.ui.unit.sp
 import ru.warr1on.simplesmsforwarding.presentation.core.components.FwdChipDecorationView
 import ru.warr1on.simplesmsforwarding.presentation.core.components.FwdDefaultPresetCard
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
-import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.model.ForwardingSettingsScreenModel
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ForwardingRuleCompactView(
-    rule: ForwardingSettingsScreenModel.ForwardingRule,
+    rule: PresentationModel.ForwardingRule,
     modifier: Modifier = Modifier
 ) {
     FwdDefaultPresetCard(
@@ -99,21 +97,21 @@ private fun ForwardingRuleCompactView_Preview() {
             .padding(16.dp)
         ) {
             ForwardingRuleCompactView(
-                rule = ForwardingSettingsScreenModel.ForwardingRule(
+                rule = PresentationModel.ForwardingRule(
                     id = "",
                     name = "Rule name",
                     typeKey = "msg_type_key",
                     applicableAddresses = listOf("+79452415764", "+79137748994", "900", "SomeCompany"),
                     filters = listOf(
-                        ForwardingSettingsScreenModel.ForwardingFilter(
+                        PresentationModel.ForwardingFilter(
                             id = "",
-                            filterType = ForwardingSettingsScreenModel.ForwardingFilter.FilterType.INCLUDE,
+                            filterType = PresentationModel.ForwardingFilter.FilterType.INCLUDE,
                             text = "Some SMS text that should be included",
                             ignoreCase = false
                         ),
-                        ForwardingSettingsScreenModel.ForwardingFilter(
+                        PresentationModel.ForwardingFilter(
                             id = "",
-                            filterType = ForwardingSettingsScreenModel.ForwardingFilter.FilterType.EXCLUDE,
+                            filterType = PresentationModel.ForwardingFilter.FilterType.EXCLUDE,
                             text = "Some SMS text that should be excluded",
                             ignoreCase = true
                         )

@@ -1,6 +1,7 @@
 package ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -10,9 +11,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.warr1on.simplesmsforwarding.presentation.core.extensions.verticalSpacer
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
-import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.model.ForwardingSettingsScreenModel
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ui.components.ForwarderSettingHeader
 import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ui.components.ForwarderSettingTextFieldBlock
+import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ui.components.ForwardingRuleAddButton
 import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ui.components.ForwardingRuleCompactView
 
 @Composable
@@ -22,6 +24,8 @@ fun ForwardingSettingsLayout(
     currentSenderKey: String,
     onCommitBotUrlUpdate: (newBotUrl: String) -> Unit,
     onCommitSenderKeyUpdate: (newSenderKey: String) -> Unit,
+    onAddNewRuleRequest: () -> Unit,
+    onEditRuleRequest: (ruleID: String) -> Unit
 ) {
     LazyColumn(
         contentPadding = contentPadding,
@@ -56,21 +60,52 @@ fun ForwardingSettingsLayout(
 
         item {
             ForwardingRuleCompactView(
-                rule = ForwardingSettingsScreenModel.ForwardingRule(
+                rule = PresentationModel.ForwardingRule(
                     id = "",
                     name = "Rule name",
                     typeKey = "msg_type_key",
                     applicableAddresses = listOf("+79452415764", "+79137748994", "900", "SomeCompany"),
                     filters = listOf(
-                        ForwardingSettingsScreenModel.ForwardingFilter(
+                        PresentationModel.ForwardingFilter(
                             id = "",
-                            filterType = ForwardingSettingsScreenModel.ForwardingFilter.FilterType.INCLUDE,
+                            filterType = PresentationModel.ForwardingFilter.FilterType.INCLUDE,
                             text = "Some SMS text that should be included",
                             ignoreCase = false
                         ),
-                        ForwardingSettingsScreenModel.ForwardingFilter(
+                        PresentationModel.ForwardingFilter(
                             id = "",
-                            filterType = ForwardingSettingsScreenModel.ForwardingFilter.FilterType.INCLUDE,
+                            filterType = PresentationModel.ForwardingFilter.FilterType.EXCLUDE,
+                            text = "Some SMS text that should be excluded",
+                            ignoreCase = true
+                        )
+                    )
+                ),
+                modifier = Modifier.fillMaxWidth()
+                    .clickable {
+                        onEditRuleRequest("some_rule_id_for_testing")
+                    }
+            )
+        }
+
+        verticalSpacer(16.dp)
+
+        item {
+            ForwardingRuleCompactView(
+                rule = PresentationModel.ForwardingRule(
+                    id = "",
+                    name = "Rule name",
+                    typeKey = "msg_type_key",
+                    applicableAddresses = listOf("+79452415764", "+79137748994", "900", "SomeCompany"),
+                    filters = listOf(
+                        PresentationModel.ForwardingFilter(
+                            id = "",
+                            filterType = PresentationModel.ForwardingFilter.FilterType.INCLUDE,
+                            text = "Some SMS text that should be included",
+                            ignoreCase = false
+                        ),
+                        PresentationModel.ForwardingFilter(
+                            id = "",
+                            filterType = PresentationModel.ForwardingFilter.FilterType.EXCLUDE,
                             text = "Some SMS text that should be excluded",
                             ignoreCase = true
                         )
@@ -80,33 +115,11 @@ fun ForwardingSettingsLayout(
             )
         }
 
-        item {
-            Spacer(Modifier.height(16.dp))
-        }
+        verticalSpacer(16.dp)
 
         item {
-            ForwardingRuleCompactView(
-                rule = ForwardingSettingsScreenModel.ForwardingRule(
-                    id = "",
-                    name = "Rule name",
-                    typeKey = "msg_type_key",
-                    applicableAddresses = listOf("+79452415764", "+79137748994", "900", "SomeCompany"),
-                    filters = listOf(
-                        ForwardingSettingsScreenModel.ForwardingFilter(
-                            id = "",
-                            filterType = ForwardingSettingsScreenModel.ForwardingFilter.FilterType.INCLUDE,
-                            text = "Some SMS text that should be included",
-                            ignoreCase = false
-                        ),
-                        ForwardingSettingsScreenModel.ForwardingFilter(
-                            id = "",
-                            filterType = ForwardingSettingsScreenModel.ForwardingFilter.FilterType.INCLUDE,
-                            text = "Some SMS text that should be excluded",
-                            ignoreCase = true
-                        )
-                    )
-                ),
-                modifier = Modifier.fillMaxWidth()
+            ForwardingRuleAddButton(
+                onClick = onAddNewRuleRequest
             )
         }
     }
@@ -123,7 +136,9 @@ private fun ForwardingSettingsLayout_Preview() {
             currentBotUrl = "https://test.com/fwdbot",
             currentSenderKey = "my_sender_key",
             onCommitBotUrlUpdate = { _ -> },
-            onCommitSenderKeyUpdate = { _ -> }
+            onCommitSenderKeyUpdate = { _ -> },
+            onAddNewRuleRequest = {},
+            onEditRuleRequest = { _ -> }
         )
     }
 }

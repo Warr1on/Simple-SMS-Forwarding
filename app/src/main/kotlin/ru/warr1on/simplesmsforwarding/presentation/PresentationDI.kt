@@ -6,12 +6,14 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.warr1on.simplesmsforwarding.core.di.DI
 import ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.ForwardingMainScreenViewModel
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorViewModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ForwardingSettingsViewModel
 
 val DI.Modules.presentation: Module get() = module {
     includes(
         mainScreenModule,
-        settingsScreenModule
+        settingsScreenModule,
+        forwardingRuleEditorModule
     )
 }
 
@@ -21,4 +23,8 @@ private val mainScreenModule: Module get() = module {
 
 private val settingsScreenModule: Module get() = module {
     viewModelOf(::ForwardingSettingsViewModel)
+}
+
+private val forwardingRuleEditorModule: Module get() = module {
+    viewModelOf(::ForwardingRuleEditorViewModel)
 }

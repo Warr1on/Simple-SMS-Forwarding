@@ -1,11 +1,11 @@
-package ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.model
+package ru.warr1on.simplesmsforwarding.presentation.shared
 
 import androidx.compose.runtime.Immutable
 
 /**
- * A namespace specific to presentation models of the forwarding settings screen
+ * A namespace specific to presentation models
  */
-interface ForwardingSettingsScreenModel {
+interface PresentationModel {
 
     /**
      * A presentation model for a forwarding filter

@@ -14,10 +14,21 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ForwardingSettingsViewModel
 
+/**
+ * Forwarding settings screen main composable
+ *
+ * @param           onBackPressed Called when the user presses the back button,
+ *                                should return to the previous screen.
+ * @param onRuleEditorOpenRequest Called when the user requested to add a new rule or edit
+ *                                an existing one. Should lead to the rule editor screen.
+ *                                When the user wants to edit an existing rule, its ID
+ *                                should be passed into this lambda.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForwardingSettingsScreen(
     onBackPressed: () -> Unit,
+    onRuleEditorOpenRequest: (existingRuleID: String?) -> Unit,
     viewModel: ForwardingSettingsViewModel = koinViewModel()
 ) {
     val currentBotUrl by viewModel.botUrlStateFlow.collectAsStateWithLifecycle()
@@ -58,7 +69,9 @@ fun ForwardingSettingsScreen(
             currentBotUrl = currentBotUrl,
             currentSenderKey = currentSenderKey,
             onCommitBotUrlUpdate = { newBotUrl -> viewModel.updateBotUrl(newBotUrl) },
-            onCommitSenderKeyUpdate = { newSenderKey -> viewModel.updateSenderKey(newSenderKey) }
+            onCommitSenderKeyUpdate = { newSenderKey -> viewModel.updateSenderKey(newSenderKey) },
+            onAddNewRuleRequest = { onRuleEditorOpenRequest(null) },
+            onEditRuleRequest = { ruleID -> onRuleEditorOpenRequest(ruleID) }
         )
     }
 }

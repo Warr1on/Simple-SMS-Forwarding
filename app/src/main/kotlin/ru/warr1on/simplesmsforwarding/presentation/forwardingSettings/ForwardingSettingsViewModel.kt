@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwarderSetting
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwarderSettingsRepository
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwardingRulesRepository
-import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.model.ForwardingSettingsScreenModel
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
 
 class ForwardingSettingsViewModel(
     private val rulesRepo: ForwardingRulesRepository,
@@ -21,7 +21,7 @@ class ForwardingSettingsViewModel(
     private val _senderKeyStateFlow = MutableStateFlow("")
     val senderKeyStateFlow = _senderKeyStateFlow.asStateFlow()
 
-    private val _rulesStateFlow = MutableStateFlow<List<ForwardingSettingsScreenModel.ForwardingRule>>(emptyList())
+    private val _rulesStateFlow = MutableStateFlow<List<PresentationModel.ForwardingRule>>(emptyList())
     val rulesStateFlow = _rulesStateFlow.asStateFlow()
 
     init {
