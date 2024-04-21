@@ -35,6 +35,9 @@ import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.compo
 
 /**
  * Nav graph destination for the forwarding rule editor screen
+ *
+ * @param onCompletion Called when the user has finished editing (either by creating a rule,
+ *                     modifying and saving an existing one, or closing the screen without saving)
  */
 fun NavGraphBuilder.forwardingRuleEditorScreen(
     onCompletion: () -> Unit
