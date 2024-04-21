@@ -15,7 +15,7 @@ class ForwardingRuleEditorViewModel(
     private val rulesRepo: ForwardingRulesRepository
 ) : ViewModel() {
 
-    private var ruleID: String? = savedStateHandle["ruleId"]
+    private var ruleID: String? = null
 
     var screenTitle by mutableStateOf("New rule")
         private set
@@ -23,13 +23,26 @@ class ForwardingRuleEditorViewModel(
     val ruleName = MutableStateFlow("")
 
     init {
+        // Saved state handle would return "null" string instead of the
+        // actual null in the absence of value, but the default value lets
+        // us to get rid of the optional here.
+        val retrievedRuleID: String = savedStateHandle["ruleId"] ?: "null"
+        // Now we can set an actual null for the ruleID, or the retrieved
+        // value if it exists
+        ruleID = when (retrievedRuleID) {
+            "null" -> null
+            else -> retrievedRuleID
+        }
+        // This piece of code looks really stupid, but oh well, what can you really
+        // expect when having to deal with Android's garbage APIs ¯\_(ツ)_/¯
+
         ruleID?.let { setupEditorForEditingRule(it) }
     }
 
     private fun setupEditorForEditingRule(ruleID: String) {
         screenTitle = "Rule editor"
         viewModelScope.launch {
-            rulesRepo.getRule(ruleID)
+            val rule = rulesRepo.getRule(ruleID)
         }
     }
 }
