@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -17,12 +18,14 @@ import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
  * Default section header for the forwarder app
  *
  * @param title Section title
+ * @param color Color of the section title text
  * @param useDefaultHeaderPadding Determines if the section header should have default padding added to it
  * @param modifier Modifier for the section header
  */
 @Composable
 fun FwdSectionHeader(
     title: String,
+    color: Color = MaterialTheme.colorScheme.primary,
     useDefaultHeaderPadding: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -35,7 +38,7 @@ fun FwdSectionHeader(
         text = title,
         fontSize = 18.sp,
         fontWeight = FontWeight.Light,
-        color = MaterialTheme.colorScheme.primary,
+        color = color,
         modifier = headerModifier
     )
 }
