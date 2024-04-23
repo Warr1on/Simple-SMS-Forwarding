@@ -1,4 +1,4 @@
-package ru.warr1on.simplesmsforwarding.presentation.core.components
+package ru.warr1on.simplesmsforwarding.presentation.core.model
 
 import androidx.compose.runtime.Immutable
 

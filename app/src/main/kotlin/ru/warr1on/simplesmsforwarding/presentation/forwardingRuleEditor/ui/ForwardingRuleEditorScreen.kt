@@ -29,6 +29,7 @@ import androidx.navigation.compose.composable
 import org.koin.androidx.compose.koinViewModel
 import ru.warr1on.simplesmsforwarding.presentation.core.components.*
 import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalHostExperimental
+import ru.warr1on.simplesmsforwarding.presentation.core.model.ImmutableWrappedList
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorViewModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState
