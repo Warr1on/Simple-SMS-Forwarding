@@ -1,60 +1,32 @@
 package ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwardingRulesRepository
-import ru.warr1on.simplesmsforwarding.presentation.core.components.ImmutableWrappedList
-import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState.*
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState.AddressesBlockState.*
 
+/**
+ * A view model for the forwarding rule editor screen
+ */
 class ForwardingRuleEditorViewModel(
     savedStateHandle: SavedStateHandle,
     private val rulesRepo: ForwardingRulesRepository
 ) : ViewModel() {
 
-    /**
-     * The title of the rule editor screen.
-     *
-     * Will either be "New rule" for the creation of a new rule,
-     * or "Rule editor" for editing an existing one.
-     */
-    var screenTitle by mutableStateOf("New rule")
-        private set
+    private val _screenState = MutableStateFlow(generateInitialScreenState())
+    /** The current state of the forwarding rule editor screen */
+    val screenState = _screenState.asStateFlow()
 
-    val ruleName = MutableStateFlow("")
 
-    val messageTypeKey = MutableStateFlow("")
-
-    private val _phoneAddresses = MutableStateFlow(
-        ImmutableWrappedList.unsafeInit(emptyList<String>())
-    )
-    val phoneAddresses = _phoneAddresses.asStateFlow()
-
-    private val _textFilters = MutableStateFlow(
-        ImmutableWrappedList.unsafeInit(emptyList<PresentationModel.ForwardingFilter>())
-    )
-    val textFilters = _textFilters.asStateFlow()
-
-    /**
-     * A validator that checks if the specified phone address can be added to a rule.
-     *
-     * As phone addresses can be vary from the normal phone numbers to short numbers
-     * to text addresses, there are no strict format rules, so most it will do is it
-     * will check if the address is not a duplicate of some other that's already been
-     * added to a rule.
-     *
-     * This lambda will take the address to validate as the parameter, and will return
-     * a boolean flag signalizing if the address can be added or not.
-     */
-    val phoneAddressValidator: (address: String) -> Boolean
-        get() = { validatePhoneAddress(it) }
+    //--- Setup ---//
 
     private var ruleID: String? = null
 
@@ -70,13 +42,14 @@ class ForwardingRuleEditorViewModel(
             else -> retrievedRuleID
         }
         // This piece of code looks really stupid, but oh well, what can you really
-        // expect when having to deal with Android's garbage APIs ¯\_(ツ)_/¯
+        // expect when having to deal with Google's garbage APIs ¯\_(ツ)_/¯
+        // (The probable culprit of this weird behavior is most likely Navigation-Compose)
 
         ruleID?.let { setupEditorForEditingRuleWithID(it) }
     }
 
     private fun setupEditorForEditingRuleWithID(ruleID: String) {
-        screenTitle = "Rule editor"
+        _screenState.update { it.copy(screenTitle = "Rule editor") }
         viewModelScope.launch {
             val rule = rulesRepo.getRule(ruleID)
             if (rule != null) {
@@ -88,8 +61,161 @@ class ForwardingRuleEditorViewModel(
     }
 
     private fun setupEditorAccordingToRule(rule: ForwardingRule) {
-        ruleName.value = rule.name
-        messageTypeKey.value = rule.typeKey
+        _screenState.update { previousState ->
+            previousState.copy(
+                ruleNameTextFieldState = previousState.ruleNameTextFieldState.copy(
+                    text = rule.name
+                ),
+                messageTypeTextFieldState = previousState.messageTypeTextFieldState.copy(
+                    text = rule.typeKey
+                ),
+                addressesBlockState = previousState.addressesBlockState.copy(
+                    addresses = rule.applicableAddresses
+                )
+            )
+        }
+    }
+
+    private fun generateInitialScreenState(): ForwardingRuleEditorScreenState {
+
+        val initialTextFieldState: (onTextChange: (String) -> Unit) -> TextFieldState = {
+            TextFieldState(
+                text = "",
+                isError = false,
+                supportingText = "",
+                onTextChange = it
+            )
+        }
+
+        val initialAddressesBlockState: () -> AddressesBlockState = {
+            AddressesBlockState(
+                addresses = emptyList(),
+                modalState = ModalState.NONE,
+                onAddAddressRequest = ::onAddAddressRequest,
+                onRemoveAddressRequest = ::onRemoveAddressRequest
+            )
+        }
+
+        return ForwardingRuleEditorScreenState(
+            screenTitle = "New rule",
+            ruleNameTextFieldState = initialTextFieldState(::onRuleNameTextChange),
+            messageTypeTextFieldState = initialTextFieldState(::onMessageTypeTextChange),
+            addressesBlockState = initialAddressesBlockState()
+        )
+    }
+
+
+    //--- Behavior: rule name and message type key text fields component ---//
+
+    /**
+     * This will be called whenever the text in the rule name text field would be
+     * requested to change. Here the proposed new text will be validated and the
+     * new state of the corresponding text field would be generated.
+     *
+     * @param text The field input's proposed text.
+     */
+    private fun onRuleNameTextChange(text: String) {
+
+        // Make sure that text isn't blank, otherwise signal error
+        if (text.isBlank()) {
+            _screenState.update { it.copy(
+                ruleNameTextFieldState = it.ruleNameTextFieldState.copy(
+                    text = text,
+                    isError = true,
+                    supportingText = "Text cannot be blank"
+                )
+            ) }
+            return
+        }
+        // Make sure that text isn't over the character limit, otherwise signal error
+        if (text.length > 30) {
+            _screenState.update { it.copy(
+                ruleNameTextFieldState = it.ruleNameTextFieldState.copy(
+                    text = text,
+                    isError = true,
+                    supportingText = "Text exceeds the character limit"
+                )
+            ) }
+            return
+        }
+
+        // If all the checks are passed, simply update the text in the text field
+        _screenState.update { it.copy(
+            ruleNameTextFieldState = it.ruleNameTextFieldState.copy(
+                text = text,
+                isError = false,
+                supportingText = null
+            )
+        ) }
+    }
+
+    /**
+     * This will be called whenever the text in the message type key text field
+     * would be requested to change. Here the proposed new text will be validated
+     * and the new state of the corresponding text field would be generated.
+     *
+     * @param text The field input's proposed text.
+     */
+    private fun onMessageTypeTextChange(text: String) {
+
+        // Make sure that text isn't blank, otherwise signal error
+        if (text.isBlank()) {
+            _screenState.update { it.copy(
+                messageTypeTextFieldState = it.messageTypeTextFieldState.copy(
+                    text = text,
+                    isError = true,
+                    supportingText = "Text cannot be blank"
+                )
+            ) }
+            return
+        }
+        // Make sure that text isn't over the character limit, otherwise signal error
+        if (text.length > 30) {
+            _screenState.update { it.copy(
+                messageTypeTextFieldState = it.messageTypeTextFieldState.copy(
+                    text = text,
+                    isError = true,
+                    supportingText = "Text exceeds the character limit"
+                )
+            ) }
+            return
+        }
+
+        // If all the checks are passed, simply update the text in the text field
+        _screenState.update { it.copy(
+            messageTypeTextFieldState = it.messageTypeTextFieldState.copy(
+                text = text,
+                isError = false,
+                supportingText = null
+            )
+        ) }
+    }
+
+
+    //--- Behavior: addresses component ---//
+
+    private fun onAddAddressRequest(address: String) {
+        _screenState.update { it.copy(
+            addressesBlockState = it.addressesBlockState.copy(
+                addresses = buildList {
+                    addAll(it.addressesBlockState.addresses)
+                    add(address)
+                },
+                modalState = ModalState.NONE
+            )
+        ) }
+    }
+
+    private fun onRemoveAddressRequest(address: String) {
+        _screenState.update { it.copy(
+            addressesBlockState = it.addressesBlockState.copy(
+                addresses = buildList {
+                    addAll(it.addressesBlockState.addresses)
+                    remove(address)
+                },
+                modalState = ModalState.NONE
+            )
+        ) }
     }
 
     /**
