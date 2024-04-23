@@ -54,7 +54,7 @@ fun ForwardingRuleEditorTextField(
     val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
 
-    val shouldShowClearButton by remember {
+    val shouldShowClearButton by remember(text) {
         derivedStateOf { text.isNotEmpty() && isFocused }
     }
 
