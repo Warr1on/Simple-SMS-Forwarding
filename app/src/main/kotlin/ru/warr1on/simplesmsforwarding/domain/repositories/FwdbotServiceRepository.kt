@@ -4,21 +4,42 @@ import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsRequest
 import ru.warr1on.simplesmsforwarding.data.remote.api.FwdbotApi
 import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsResponse
 
+/**
+ * The result of a message forwarding request
+ *
+ * @param result Request's resulting status. Represented by the [Result] enum
+ * @param resultDescription Text description of the result that the backend gave
+ * @param numberOfRecipients Number of recipients the message was successfully forwarded to
+ * @param recipients A list with the name of the recipients the message was successfully forwarded to
+ */
 data class MessageForwardingRequestResult(
     val result: Result,
     val resultDescription: String,
     val numberOfRecipients: Int? = null,
     val recipients: List<String>? = null
 ) {
+
+    /**
+     * Represents a message forwarding request status
+     */
     enum class Result(val stringRepresentation: String) {
+
+        /** The message was successfully forwarded to all of the recipients */
         SUCCESS("success"),
+
+        /** The message was forwarded only to some of the recipients */
         PARTIAL_SUCCESS("partial_success"),
+
+        /** Backend failed to forward the message */
         FAILURE("failure"),
+
+        /** Unable to determine the result status */
         UNDEFINED("undefined")
     }
 
     companion object {
 
+        /** Maps the result status coded by text into a [Result] enum value */
         fun typedResultFromString(resultAsString: String): Result {
             return when (resultAsString) {
                 Result.SUCCESS.stringRepresentation -> Result.SUCCESS
