@@ -44,8 +44,7 @@ private val DI.Modules.repositories get() = module {
     single {
         MessageForwardingRecordsRepository.Factory.getDefaultRepo(
             recordsDao = get(),
-            ioDispatcher = get(named(DI.Qualifiers.Coroutines.ioDispatcher)),
-            parentScope = get(named(DI.Qualifiers.Coroutines.generalIOCoroutineScope))
+            coroutineScope = get(named(DI.Qualifiers.Coroutines.generalIOCoroutineScope))
         )
     }
 }

@@ -26,13 +26,11 @@ interface MessageForwardingRecordsRepository {
 
         fun getDefaultRepo(
             recordsDao: MessageForwardingRecordsDao,
-            ioDispatcher: CoroutineDispatcher,
-            parentScope: CoroutineScope
+            coroutineScope: CoroutineScope
         ): MessageForwardingRecordsRepository {
             return MessageForwardingRecordsRepositoryImpl(
                 recordsDao,
-                ioDispatcher,
-                parentScope
+                coroutineScope
             )
         }
     }
@@ -40,18 +38,20 @@ interface MessageForwardingRecordsRepository {
 
 private class MessageForwardingRecordsRepositoryImpl(
     private val recordsDao: MessageForwardingRecordsDao,
-    private val ioDispatcher: CoroutineDispatcher,
-    parentScope: CoroutineScope
+    private val coroutineScope: CoroutineScope
 ) : MessageForwardingRecordsRepository {
 
     private val _records = MutableStateFlow<List<MessageForwardingRecord>>(emptyList())
-    override val records: StateFlow<List<MessageForwardingRecord>> = _records
+    override val records: StateFlow<List<MessageForwardingRecord>>
+        get() {
+            if (shouldLoadData) {
+                shouldLoadData = false
+                updateRecordsList()
+            }
+            return _records
+        }
 
-    private val coroutineScope = parentScope + SupervisorJob(parent = parentScope.coroutineContext.job)
-
-    init {
-        updateRecordsList()
-    }
+    private var shouldLoadData = true
 
     override suspend fun getAllStoredRecords(): List<MessageForwardingRecord> {
         val storedRecords = recordsDao.getAll()

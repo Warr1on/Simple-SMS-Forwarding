@@ -83,13 +83,14 @@ private class ForwardingRulesRepositoryImpl(
 ) : ForwardingRulesRepository {
 
     private val _forwardingRules = MutableStateFlow<List<ForwardingRule>>(emptyList())
-    override val forwardingRules: StateFlow<List<ForwardingRule>> get() {
-        if (shouldLoadRules) {
-            shouldLoadRules = false
-            coroutineScope.launch { updateRulesList() }
+    override val forwardingRules: StateFlow<List<ForwardingRule>>
+        get() {
+            if (shouldLoadRules) {
+                shouldLoadRules = false
+                coroutineScope.launch { updateRulesList() }
+            }
+            return _forwardingRules
         }
-        return _forwardingRules
-    }
 
     private var shouldLoadRules = true
 
