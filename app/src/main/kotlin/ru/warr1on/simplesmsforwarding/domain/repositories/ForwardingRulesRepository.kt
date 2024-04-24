@@ -11,24 +11,59 @@ import ru.warr1on.simplesmsforwarding.data.local.dao.ForwardingRulesDao
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.data.local.model.PersistedRuleAssociatedPhoneAddress
 
+/**
+ * A repository for working with forwarding rules
+ */
 interface ForwardingRulesRepository {
 
+    /**
+     * All of the currently saved [ForwardingRule]s.
+     *
+     * This flow will emit a new value every time a rule would be
+     * added, deleted or changed in the database.
+     */
     val forwardingRules: StateFlow<List<ForwardingRule>>
 
+    /**
+     * Gets all of the stored [ForwardingRule]s
+     */
     suspend fun getAllRules(): List<ForwardingRule>
 
+    /**
+     * Gets a stored [ForwardingRule] by its [ruleID]
+     */
     suspend fun getRule(ruleID: String): ForwardingRule?
 
+    /**
+     * Adds a new [ForwardingRule] into the database
+     */
     suspend fun addRule(rule: ForwardingRule)
 
+    /**
+     * Deletes a [ForwardingRule] with the specified [ruleID] from the database
+     */
     suspend fun deleteRule(ruleID: String)
 
+    /**
+     * Adds a new phone [address] that a rule will be applied to
+     * for the rule specified by the [ruleID]
+     */
     suspend fun applyPhoneAddressToRule(address: String, ruleID: String)
 
+    /**
+     * Removes the specified [address] from the applicable addresses
+     * of the rule specified by the [ruleID]
+     */
     suspend fun removeAddressFromApplicableToRule(address: String, ruleID: String)
 
+    /**
+     * Adds a [ForwardingFilter] for the rule specified by the [ruleID]
+     */
     suspend fun addFilterToRule(filter: ForwardingFilter, ruleID: String)
 
+    /**
+     * Removes a [ForwardingFilter] from the rule specified by the [ruleID]
+     */
     suspend fun removeFilterFromRule(filter: ForwardingFilter, ruleID: String)
 
     object Factory {
