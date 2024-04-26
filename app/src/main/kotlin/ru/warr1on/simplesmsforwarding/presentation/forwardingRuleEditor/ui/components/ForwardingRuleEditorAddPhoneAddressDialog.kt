@@ -25,12 +25,11 @@ import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 
 @Composable
 fun ForwardingRuleEditorAddPhoneAddressDialog(
-    isShown: MutableState<Boolean>
+    isShown: MutableState<Boolean>,
 ) {
     if (isShown.value) {
         ModalPopup(
             onDismissed = { dismissedInternally, stateSyncRequired ->
-//                if (dismissedInternally) { isShown.value = false }
                 isShown.value = false
             },
             applyImePadding = true
