@@ -9,9 +9,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwardingRulesRepository
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState.*
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState.AddressesBlockState.*
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.*
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.*
 
 /**
  * A view model for the forwarding rule editor screen
@@ -22,11 +21,23 @@ class ForwardingRuleEditorViewModel(
 ) : ViewModel() {
 
     private val _screenState = MutableStateFlow(generateInitialScreenState())
-    /** The current state of the forwarding rule editor screen */
+    private val _actions = MutableStateFlow(generateActions())
+
+    //region Public API
+
+    /**
+     * The current state of the forwarding rule editor screen
+     */
     val screenState = _screenState.asStateFlow()
 
+    /**
+     * Actions to bind to various UI components
+     */
+    val actions = _actions.asStateFlow()
 
-    //--- Setup ---//
+    //endregion
+
+    //region Initialization and editor setup
 
     private var ruleID: String? = null
 
@@ -76,36 +87,60 @@ class ForwardingRuleEditorViewModel(
         }
     }
 
+    //endregion
+
+    //region Initial state and actions generation
+
     private fun generateInitialScreenState(): ForwardingRuleEditorScreenState {
-
-        val initialTextFieldState: (onTextChange: (String) -> Unit) -> TextFieldState = {
-            TextFieldState(
-                text = "",
-                isError = false,
-                supportingText = "",
-                onTextChange = it
-            )
-        }
-
-        val initialAddressesBlockState: () -> AddressesBlockState = {
-            AddressesBlockState(
-                addresses = emptyList(),
-                modalState = ModalState.NONE,
-                onAddAddressRequest = ::onAddAddressRequest,
-                onRemoveAddressRequest = ::onRemoveAddressRequest
-            )
-        }
-
         return ForwardingRuleEditorScreenState(
             screenTitle = "New rule",
-            ruleNameTextFieldState = initialTextFieldState(::onRuleNameTextChange),
-            messageTypeTextFieldState = initialTextFieldState(::onMessageTypeTextChange),
-            addressesBlockState = initialAddressesBlockState()
+            ruleNameTextFieldState = emptyTextFieldState(),
+            messageTypeTextFieldState = emptyTextFieldState(),
+            addressesBlockState = AddressesBlockState(addresses = emptyList()),
+            filtersBlockState = FiltersBlockState(filters = emptyList()),
+            addNewAddressDialogState = AddNewAddressDialogState.NotShowing
         )
     }
 
+    private fun generateActions(): ForwardingRuleEditorScreenActions {
 
-    //--- Behavior: rule name and message type key text fields component ---//
+        val ruleNameTextFieldActions = TextFieldActions(
+            onTextInputRequest = { proposedNewText -> onRuleNameTextChange(proposedNewText) }
+        )
+
+        val messageTypeKeyTextFieldActions = TextFieldActions(
+            onTextInputRequest = { proposedNewText -> onMessageTypeTextChange(proposedNewText) }
+        )
+
+        val addressesComponentActions = AddressesComponentActions(
+            onAddNewAddressRequest = { onOpenAddNewAddressDialogRequest() },
+            onAddFromKnownRequest = {  }, //TODO
+            onRemoveAddressRequest = { phoneAddress -> onRemoveAddressRequest(phoneAddress) }
+        )
+
+        val filtersComponentActions = FiltersComponentActions(
+            onAddNewFilter = {}, //TODO
+            onRemoveFilter = { filterID ->  } //TODO
+        )
+
+        val addNewAddressDialogActions = AddNewAddressDialogActions(
+            onTextInputRequest = { proposedNewText -> onPhoneAddressInputChangeRequest(proposedNewText) },
+            onAddNewAddressRequest = { phoneAddress -> onAddPhoneAddressToRule(phoneAddress) },
+            onDialogDismissed = { onAddNewAddressDialogDismissal() }
+        )
+
+        return ForwardingRuleEditorScreenActions(
+            ruleNameTextFieldActions = ruleNameTextFieldActions,
+            messageTypeKeyTextFieldActions = messageTypeKeyTextFieldActions,
+            addressesComponentActions = addressesComponentActions,
+            filtersComponentActions = filtersComponentActions,
+            addNewAddressesDialogActions = addNewAddressDialogActions
+        )
+    }
+
+    //endregion
+
+    //region Behavior: rule name and message type key text field components
 
     /**
      * This will be called whenever the text in the rule name text field would be
@@ -191,37 +226,121 @@ class ForwardingRuleEditorViewModel(
         ) }
     }
 
+    //endregion
 
-    //--- Behavior: addresses component ---//
+    //region Behavior: addresses component
 
-    private fun onAddAddressRequest(address: String) {
+    /**
+     * Will be called when the user would want to add a new phone address
+     * to the rule. Should open the "add new phone address" dialog.
+     */
+    private fun onOpenAddNewAddressDialogRequest() {
         _screenState.update { it.copy(
-            addressesBlockState = it.addressesBlockState.copy(
-                addresses = buildList {
-                    addAll(it.addressesBlockState.addresses)
-                    add(address)
-                },
-                modalState = ModalState.NONE
+            addNewAddressDialogState = AddNewAddressDialogState.Showing(
+                textFieldState = emptyTextFieldState(),
+                canAddCurrentInputAsAddress = false
             )
         ) }
     }
 
+    /**
+     * Will be called when the user wants to remove a certain
+     * phone address from the rule.
+     */
     private fun onRemoveAddressRequest(address: String) {
         _screenState.update { it.copy(
             addressesBlockState = it.addressesBlockState.copy(
                 addresses = buildList {
                     addAll(it.addressesBlockState.addresses)
                     remove(address)
-                },
-                modalState = ModalState.NONE
+                }
+            )
+        ) }
+    }
+
+    //endregion
+
+    //region Behavior: "add new phone address" dialog
+
+    /**
+     * Called whenever the input text in the phone address input text field
+     * inside the "add new phone address dialog" wants to change
+     */
+    private fun onPhoneAddressInputChangeRequest(proposedNewText: String) {
+
+        val canAddThisAddressToRule = canAddPhoneAddressToRule(proposedNewText)
+
+        _screenState.update { it.copy(
+            addNewAddressDialogState = AddNewAddressDialogState.Showing(
+                textFieldState = TextFieldState(
+                    text = proposedNewText,
+                    isError = false,
+                    supportingText = null,
+                ),
+                canAddCurrentInputAsAddress = canAddThisAddressToRule
             )
         ) }
     }
 
     /**
-     * A validator that checks if the specified phone address can be added to a rule.
+     * Called when the user wants to add a new address from the
+     * "add new phone address" dialog
      */
-    private fun validatePhoneAddress(address: String): Boolean {
-        return true
+    private fun onAddPhoneAddressToRule(phoneAddress: String) {
+
+        if (!canAddPhoneAddressToRule(phoneAddress)) { return }
+
+        _screenState.update { it.copy(
+            addressesBlockState = it.addressesBlockState.copy(
+                addresses = buildList {
+                    addAll(it.addressesBlockState.addresses)
+                    add(phoneAddress)
+                }
+            )
+        ) }
     }
+
+    /**
+     * Called whenever the "add new address" dialog is dismissed.
+     * This should happen after the fact of dismissal, and here
+     * the dialog state would update accordingly to sync the state.
+     */
+    private fun onAddNewAddressDialogDismissal() {
+        _screenState.update { it.copy(
+            addNewAddressDialogState = AddNewAddressDialogState.NotShowing
+        ) }
+    }
+
+    //endregion
+
+    //region Misc
+
+    /**
+     * Returns a [TextFieldState] with default parameters for an empty text field
+     */
+    private fun emptyTextFieldState(): TextFieldState {
+        return TextFieldState(
+            text = "",
+            isError = false,
+            supportingText = null
+        )
+    }
+
+    /**
+     * Checks if the specified phone address can be added to a rule.
+     * As of now, simply checks that it's not a dupe.
+     */
+    private fun canAddPhoneAddressToRule(phoneAddress: String): Boolean {
+        return isPhoneAddressDuplicatesAlreadyAddedAddress(phoneAddress)
+    }
+
+    /**
+     * Checks if the specified phone address is a dupe of some other address added to this rule
+     */
+    private fun isPhoneAddressDuplicatesAlreadyAddedAddress(phoneAddress: String): Boolean {
+        val currentlyAddedAddresses = _screenState.value.addressesBlockState.addresses
+        return currentlyAddedAddresses.contains(phoneAddress)
+    }
+
+    //endregion
 }

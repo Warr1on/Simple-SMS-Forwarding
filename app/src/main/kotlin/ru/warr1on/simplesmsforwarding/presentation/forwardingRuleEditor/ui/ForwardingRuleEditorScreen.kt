@@ -28,12 +28,16 @@ import org.koin.androidx.compose.koinViewModel
 import ru.warr1on.simplesmsforwarding.presentation.core.components.*
 import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalHostExperimental
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.*
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorViewModel
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.model.ForwardingRuleEditorScreenState
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.ForwardingRuleEditorAddPhoneAddressButton
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.ForwardingRuleEditorAddPhoneAddressDialog
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.ForwardingRuleEditorPhoneAddressEntry
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.ForwardingRuleEditorTextField
+
+//region Navigation
 
 /**
  * Nav graph destination for the forwarding rule editor screen
@@ -53,6 +57,10 @@ fun NavGraphBuilder.forwardingRuleEditorScreen(
     }
 }
 
+//endregion
+
+//region Main composable and layout
+
 /**
  * Forwarding rule editor screen main composable
  *
@@ -66,9 +74,11 @@ fun ForwardingRuleEditorScreen(
     viewModel: ForwardingRuleEditorViewModel = koinViewModel()
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
+    val actions by viewModel.actions.collectAsStateWithLifecycle()
 
     ForwardingRuleEditorLayout(
         screenState = screenState,
+        actions = actions,
         onCompletion = onCompletion
     )
 }
@@ -76,6 +86,7 @@ fun ForwardingRuleEditorScreen(
 @Composable
 private fun ForwardingRuleEditorLayout(
     screenState: ForwardingRuleEditorScreenState,
+    actions: ForwardingRuleEditorScreenActions,
     onCompletion: () -> Unit
 ) {
     val contentScrollState = rememberScrollState()
@@ -92,6 +103,7 @@ private fun ForwardingRuleEditorLayout(
     ) { paddingValues ->
         ForwardingRuleEditor(
             screenState = screenState,
+            actions = actions,
             modifier = Modifier
                 .verticalScroll(contentScrollState)
                 .fillMaxSize()
@@ -103,6 +115,7 @@ private fun ForwardingRuleEditorLayout(
 @Composable
 private fun ForwardingRuleEditor(
     screenState: ForwardingRuleEditorScreenState,
+    actions: ForwardingRuleEditorScreenActions,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -112,7 +125,7 @@ private fun ForwardingRuleEditor(
         ForwardingRuleEditorTextField(
             title = "Rule name",
             text = screenState.ruleNameTextFieldState.text,
-            onValueChange = screenState.ruleNameTextFieldState.onTextChange,
+            onValueChange = actions.ruleNameTextFieldActions.onTextInputRequest,
             supportingText = screenState.ruleNameTextFieldState.supportingText,
             isError = screenState.ruleNameTextFieldState.isError,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -121,7 +134,7 @@ private fun ForwardingRuleEditor(
         ForwardingRuleEditorTextField(
             title = "Message type key",
             text = screenState.messageTypeTextFieldState.text,
-            onValueChange = screenState.messageTypeTextFieldState.onTextChange,
+            onValueChange = actions.messageTypeKeyTextFieldActions.onTextInputRequest,
             supportingText = screenState.messageTypeTextFieldState.supportingText,
             isError = screenState.messageTypeTextFieldState.isError,
             capitalization = KeyboardCapitalization.None,
@@ -138,7 +151,8 @@ private fun ForwardingRuleEditor(
         Spacer(height = 4.dp)
 
         PhoneAddressesBlock(
-            state = screenState.addressesBlockState
+            state = screenState.addressesBlockState,
+            actions = actions.addressesComponentActions
         )
 
         VerticalSpacer(height = 16.dp)
@@ -151,19 +165,22 @@ private fun ForwardingRuleEditor(
         Spacer(4.dp)
 
         FiltersBlock(
-            state = ForwardingRuleEditorScreenState.FiltersBlockState(
-                filters = emptyList(),
-                onAddNewFilterRequest = {}
-            ) // stub
+            state = screenState.filtersBlockState,
+            actions = actions.filtersComponentActions
         )
 
         Spacer(32.dp)
     }
 }
 
+//endregion
+
+//region Addresses UI block
+
 @Composable
 private fun PhoneAddressesBlock(
-    state: ForwardingRuleEditorScreenState.AddressesBlockState
+    state: ForwardingRuleEditorScreenState.AddressesBlockState,
+    actions: AddressesComponentActions
 ) {
     val shouldShowAddAddressDialog = remember { mutableStateOf(false) }
     val shouldShowAddFromKnownDialog = remember { mutableStateOf(false) }
@@ -190,7 +207,7 @@ private fun PhoneAddressesBlock(
                 items(addresses) {  address ->
                     ForwardingRuleEditorPhoneAddressEntry(
                         phoneAddress = address,
-                        onRemovePhoneAddress = { state.onRemoveAddressRequest(it) }
+                        onRemovePhoneAddress = actions.onRemoveAddressRequest
                     )
                 }
 
@@ -209,8 +226,8 @@ private fun PhoneAddressesBlock(
                 )
 
                 AddPhoneAddressButton(
-                    onAddAddressClicked = onAddNewAddressClicked,
-                    onAddFromKnownClicked = onAddFromKnownClicked
+                    onAddAddressClicked = actions.onAddNewAddressRequest,
+                    onAddFromKnownClicked = actions.onAddFromKnownRequest
                 )
             }
         }
@@ -234,9 +251,14 @@ private fun AddPhoneAddressButton(
     VerticalSpacer(height = 8.dp)
 }
 
+//endregion
+
+//region Filters UI block
+
 @Composable
 private fun FiltersBlock(
-    state: ForwardingRuleEditorScreenState.FiltersBlockState
+    state: ForwardingRuleEditorScreenState.FiltersBlockState,
+    actions: FiltersComponentActions
 ) {
     AnimatedContent(
         targetState = state.filters,
@@ -252,6 +274,10 @@ private fun FiltersBlock(
         }
     }
 }
+
+//endregion
+
+//region Empty content placeholders
 
 /**
  * This placeholder displays in the "Apply to numbers:" section
@@ -305,18 +331,22 @@ private fun EmptyContentPlaceholder(
     }
 }
 
-//--- Previews ---//
+//endregion
+
+//region Previews
 
 @Preview
 @Composable
 private fun ForwardingRuleEditorScreen_Preview() {
 
     val state = remember { generatePreviewScreenState() }
+    val actions = remember { generatePreviewScreenActions() }
 
     AppTheme {
         ModalHostExperimental {
             ForwardingRuleEditorLayout(
                 screenState = state,
+                actions = actions,
                 onCompletion = { }
             )
         }
@@ -336,32 +366,43 @@ private fun generatePreviewScreenState(): ForwardingRuleEditorScreenState {
     val ruleNameTextFieldState = ForwardingRuleEditorScreenState.TextFieldState(
         text = "Some rule name",
         isError = false,
-        supportingText = "",
-        onTextChange = {}
+        supportingText = ""
     )
 
     val messageTypeKeyTextFieldState = ForwardingRuleEditorScreenState.TextFieldState(
         text = "some_msgtype_key",
         isError = false,
-        supportingText = "",
-        onTextChange = {}
+        supportingText = ""
     )
 
-    val initialAddressesBlockState: () -> ForwardingRuleEditorScreenState.AddressesBlockState = {
-        ForwardingRuleEditorScreenState.AddressesBlockState(
-            addresses = addressesEmpty,
-            modalState = ForwardingRuleEditorScreenState.AddressesBlockState.ModalState.NONE,
-            onAddAddressRequest = {},
-            onRemoveAddressRequest = {}
-        )
-    }
+    val addressesBlockState = ForwardingRuleEditorScreenState.AddressesBlockState(
+        addresses = addressesEmpty
+    )
+
+    val filtersBlockState = ForwardingRuleEditorScreenState.FiltersBlockState(
+        filters = emptyList()
+    )
+
+    val addNewAddressDialogState = ForwardingRuleEditorScreenState.AddNewAddressDialogState.NotShowing
 
     return ForwardingRuleEditorScreenState(
         screenTitle = "Rule editor",
         ruleNameTextFieldState = ruleNameTextFieldState,
         messageTypeTextFieldState = messageTypeKeyTextFieldState,
-        addressesBlockState = initialAddressesBlockState()
+        addressesBlockState = addressesBlockState,
+        filtersBlockState = filtersBlockState,
+        addNewAddressDialogState = addNewAddressDialogState
     )
+}
+
+private fun generatePreviewScreenActions(): ForwardingRuleEditorScreenActions {
+     return ForwardingRuleEditorScreenActions(
+         ruleNameTextFieldActions = TextFieldActions {  },
+         messageTypeKeyTextFieldActions = TextFieldActions {  },
+         addressesComponentActions = AddressesComponentActions({}, {}, {}),
+         filtersComponentActions = FiltersComponentActions({}, {}),
+         addNewAddressesDialogActions = AddNewAddressDialogActions({}, {}, {})
+     )
 }
 
 @Preview
@@ -377,3 +418,5 @@ private fun EmptyAddressesPlaceholder_Preview() {
         }
     }
 }
+
+//endregion
