@@ -111,7 +111,7 @@ private fun AddPhoneAddressDialogTextField(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
-        leadingIcon = { Icon(imageVector = Icons.Filled.Phone, contentDescription = null)},
+        leadingIcon = { Icon(imageVector = Icons.Filled.Phone, contentDescription = null) },
         trailingIcon = {
             AnimatedVisibility(
                 visible = shouldShowClearButton,
