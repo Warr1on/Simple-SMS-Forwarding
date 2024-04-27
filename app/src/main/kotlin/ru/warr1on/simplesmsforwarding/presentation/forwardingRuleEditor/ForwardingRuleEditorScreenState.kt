@@ -28,8 +28,6 @@ data class ForwardingRuleEditorScreenState(
      * @param text Current text inside the text field
      * @param isError Signals error state if true
      * @param supportingText This text will be displayed below the text field
-     * @param onTextChange Called whenever the text inside the text field would want
-     * to change. Will take up the new proposed text as a parameter
      */
     @Immutable
     data class TextFieldState(
@@ -60,6 +58,9 @@ data class ForwardingRuleEditorScreenState(
 
     /**
      * State of the "add new phone address" dialog
+     *
+     * @see Showing
+     * @see NotShowing
      */
     sealed interface AddNewAddressDialogState {
 
