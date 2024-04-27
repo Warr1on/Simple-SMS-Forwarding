@@ -22,19 +22,23 @@ import ru.warr1on.simplesmsforwarding.presentation.core.components.Spacer
 import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalHostExperimental
 import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalPopup
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.*
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.AddNewAddressDialogState
 
 @Composable
 fun ForwardingRuleEditorAddPhoneAddressDialog(
-    isShown: MutableState<Boolean>,
+    state: AddNewAddressDialogState,
+    actions: AddNewAddressDialogActions
 ) {
-    if (isShown.value) {
+    if (state is AddNewAddressDialogState.Showing) {
         ModalPopup(
-            onDismissed = { dismissedInternally, stateSyncRequired ->
-                isShown.value = false
-            },
+            onDismissed = { _, _ -> actions.onDialogDismissed() },
             applyImePadding = true
         ) {
             AddPhoneAddressDialogContent(
+                state = state,
+                actions = actions,
                 onDismissRequest = { this.dismiss() }
             )
         }
@@ -43,12 +47,12 @@ fun ForwardingRuleEditorAddPhoneAddressDialog(
 
 @Composable
 private fun AddPhoneAddressDialogContent(
+    state: AddNewAddressDialogState.Showing,
+    actions: AddNewAddressDialogActions,
+    onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    onDismissRequest: () -> Unit
 ) {
-    var textFieldText by remember { mutableStateOf("") }
-    val shouldDisableAddButton by remember { derivedStateOf { textFieldText.isBlank() } }
-    val shouldShowTextClearButton by remember { derivedStateOf { textFieldText.isNotEmpty() }}
+    val shouldShowTextClearButton = remember(state) { state.textFieldState.text.isNotEmpty() }
 
     Column(
         modifier = modifier
@@ -69,16 +73,19 @@ private fun AddPhoneAddressDialogContent(
         Spacer(16.dp)
 
         AddPhoneAddressDialogTextField(
-            text = textFieldText,
-            onValueChange = { textFieldText = it },
-            onClearInputRequest = { textFieldText = "" },
+            text = state.textFieldState.text,
+            onValueChange = { actions.onTextInputRequest(it) },
+            onClearInputRequest = { actions.onTextInputRequest("") },
             shouldShowClearButton = shouldShowTextClearButton
         )
 
         AddPhoneAddressDialogActionButtons(
-            shouldDisableAddButton = shouldDisableAddButton,
+            shouldDisableAddButton = !state.canAddCurrentInputAsAddress,
             onCancelClicked = onDismissRequest,
-            onAddClicked = {},
+            onAddClicked = {
+                actions.onAddNewAddressRequest()
+                onDismissRequest()
+            },
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(vertical = 8.dp)
@@ -156,6 +163,16 @@ private fun AddPhoneAddressDialogActionButtons(
 @Preview
 @Composable
 private fun AddPhoneAddressDialogContent_Preview() {
+
+    val state = remember { generatePreviewShownDialogState() }
+    val actions = remember {
+        AddNewAddressDialogActions(
+            onTextInputRequest = {},
+            onAddNewAddressRequest = {},
+            onDialogDismissed = {}
+        )
+    }
+
     AppTheme {
         Box(
             modifier = Modifier
@@ -163,6 +180,8 @@ private fun AddPhoneAddressDialogContent_Preview() {
                 .padding(16.dp)
         ) {
             AddPhoneAddressDialogContent(
+                state = state,
+                actions = actions,
                 modifier = Modifier.clip(MaterialTheme.shapes.extraLarge),
                 onDismissRequest = {}
             )
@@ -175,7 +194,28 @@ private fun AddPhoneAddressDialogContent_Preview() {
 @Composable
 private fun ForwardingRuleEditorAddPhoneAddressDialog_Preview() {
 
-    var shouldDisplayAlert = remember { mutableStateOf(false) }
+    var state: AddNewAddressDialogState by remember {
+        mutableStateOf(AddNewAddressDialogState.NotShowing)
+    }
+
+    val actions = remember {
+        AddNewAddressDialogActions(
+            onTextInputRequest = {
+                state = AddNewAddressDialogState.Showing(
+                    textFieldState = ForwardingRuleEditorScreenState.TextFieldState(
+                        text = it,
+                        isError = false,
+                        supportingText = null
+                    ),
+                    canAddCurrentInputAsAddress = it.isNotBlank(),
+                )
+            },
+            onAddNewAddressRequest = {},
+            onDialogDismissed = {
+                state = AddNewAddressDialogState.NotShowing
+            }
+        )
+    }
 
     AppTheme {
         ModalHostExperimental {
@@ -185,14 +225,26 @@ private fun ForwardingRuleEditorAddPhoneAddressDialog_Preview() {
                     .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
             ) {
-                Button(onClick = { shouldDisplayAlert.value = true }) {
+                Button(onClick = { state = generatePreviewShownDialogState() }) {
                     Text("Click me", color = MaterialTheme.colorScheme.onPrimary)
                 }
 
                 ForwardingRuleEditorAddPhoneAddressDialog(
-                    isShown = shouldDisplayAlert
+                    state = state,
+                    actions = actions
                 )
             }
         }
     }
+}
+
+private fun generatePreviewShownDialogState(): AddNewAddressDialogState.Showing {
+    return AddNewAddressDialogState.Showing(
+        textFieldState = ForwardingRuleEditorScreenState.TextFieldState(
+            text = "",
+            isError = false,
+            supportingText = null
+        ),
+        canAddCurrentInputAsAddress = false
+    )
 }

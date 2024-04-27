@@ -68,15 +68,15 @@ data class ForwardingRuleEditorScreenActions(
      *
      * @param onTextInputRequest Called whenever the text inside the phone address input
      * text field would want to change. Takes the proposed new text as a parameter.
-     * @param onAddNewAddressRequest Called when the user wants to add the specified phone
-     * address to the rule
+     * @param onAddNewAddressRequest Called when the user wants to add the phone
+     * address specified in the input text field to the rule
      * @param onDialogDismissed Called when the dialog was dismissed. This call should be
      * made AFTER the fact, and it should sync the dialog state according to that fact
      */
     @Immutable
     data class AddNewAddressDialogActions(
         val onTextInputRequest: (proposedNewText: String) -> Unit,
-        val onAddNewAddressRequest: (phoneAddress: String) -> Unit,
+        val onAddNewAddressRequest: () -> Unit,
         val onDialogDismissed: () -> Unit
     )
 }

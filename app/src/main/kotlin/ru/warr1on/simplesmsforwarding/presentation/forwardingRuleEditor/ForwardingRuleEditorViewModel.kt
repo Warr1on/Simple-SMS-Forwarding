@@ -125,7 +125,7 @@ class ForwardingRuleEditorViewModel(
 
         val addNewAddressDialogActions = AddNewAddressDialogActions(
             onTextInputRequest = { proposedNewText -> onPhoneAddressInputChangeRequest(proposedNewText) },
-            onAddNewAddressRequest = { phoneAddress -> onAddPhoneAddressToRule(phoneAddress) },
+            onAddNewAddressRequest = { onAddPhoneAddressToRule() },
             onDialogDismissed = { onAddNewAddressDialogDismissal() }
         )
 
@@ -286,8 +286,11 @@ class ForwardingRuleEditorViewModel(
      * Called when the user wants to add a new address from the
      * "add new phone address" dialog
      */
-    private fun onAddPhoneAddressToRule(phoneAddress: String) {
+    private fun onAddPhoneAddressToRule() {
 
+        val dialogState = _screenState.value.addNewAddressDialogState
+        if (dialogState !is AddNewAddressDialogState.Showing) { return }
+        val phoneAddress = dialogState.textFieldState.text
         if (!canAddPhoneAddressToRule(phoneAddress)) { return }
 
         _screenState.update { it.copy(
@@ -328,10 +331,10 @@ class ForwardingRuleEditorViewModel(
 
     /**
      * Checks if the specified phone address can be added to a rule.
-     * As of now, simply checks that it's not a dupe.
+     * As of now, simply checks that it's not blank and not a dupe.
      */
     private fun canAddPhoneAddressToRule(phoneAddress: String): Boolean {
-        return isPhoneAddressDuplicatesAlreadyAddedAddress(phoneAddress)
+        return phoneAddress.isNotBlank() && !isPhoneAddressDuplicatesAlreadyAddedAddress(phoneAddress)
     }
 
     /**

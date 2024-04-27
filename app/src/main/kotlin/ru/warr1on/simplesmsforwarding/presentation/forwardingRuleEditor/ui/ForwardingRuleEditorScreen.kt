@@ -110,6 +110,11 @@ private fun ForwardingRuleEditorLayout(
                 .padding(paddingValues)
         )
     }
+
+    ForwardingRuleEditorAddPhoneAddressDialog(
+        state = screenState.addNewAddressDialogState,
+        actions = actions.addNewAddressesDialogActions
+    )
 }
 
 @Composable
@@ -232,8 +237,6 @@ private fun PhoneAddressesBlock(
             }
         }
     }
-
-    ForwardingRuleEditorAddPhoneAddressDialog(isShown = shouldShowAddAddressDialog)
 }
 
 @Composable
