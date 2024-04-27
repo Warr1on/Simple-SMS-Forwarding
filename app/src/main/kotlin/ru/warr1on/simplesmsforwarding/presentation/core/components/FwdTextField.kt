@@ -106,11 +106,12 @@ fun FwdTextField(
     var lastSupportingText by remember {
         mutableStateOf(supportingText)
     }
-    val hasSupportingText by remember(supportingText) {
+    val hasSupportingText = remember(supportingText) {
         if (!supportingText.isNullOrBlank()) {
             lastSupportingText = supportingText
+            println("last supp text: $supportingText")
         }
-        derivedStateOf { !supportingText.isNullOrBlank() }
+        !supportingText.isNullOrBlank()
     }
 
     val label: (@Composable () -> Unit)? = remember(labelText) {
@@ -192,6 +193,8 @@ fun FwdTextField(
         supportingText = {
             AnimatedVisibility(
                 visible = hasSupportingText,
+                enter = fadeIn() + expandVertically(clip = false, initialHeight = { it/2}),
+                exit = fadeOut() + shrinkVertically(clip = false, targetHeight = { it/2 }),
                 label = "textfield_supporting_text_visibility_anim"
             ) {
                 AnimatedContent(
