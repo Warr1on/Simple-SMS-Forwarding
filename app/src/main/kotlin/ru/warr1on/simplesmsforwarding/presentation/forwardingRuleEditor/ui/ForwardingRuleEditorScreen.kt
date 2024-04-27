@@ -7,10 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -128,20 +128,16 @@ private fun ForwardingRuleEditor(
         Spacer(8.dp)
 
         ForwardingRuleEditorTextField(
-            title = "Rule name",
-            text = screenState.ruleNameTextFieldState.text,
-            onValueChange = actions.ruleNameTextFieldActions.onTextInputRequest,
-            supportingText = screenState.ruleNameTextFieldState.supportingText,
-            isError = screenState.ruleNameTextFieldState.isError,
+            headerText = "Rule name",
+            state = screenState.ruleNameTextFieldState,
+            actions = actions.ruleNameTextFieldActions,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
         ForwardingRuleEditorTextField(
-            title = "Message type key",
-            text = screenState.messageTypeTextFieldState.text,
-            onValueChange = actions.messageTypeKeyTextFieldActions.onTextInputRequest,
-            supportingText = screenState.messageTypeTextFieldState.supportingText,
-            isError = screenState.messageTypeTextFieldState.isError,
+            headerText = "Message type key",
+            state = screenState.messageTypeTextFieldState,
+            actions = actions.messageTypeKeyTextFieldActions,
             capitalization = KeyboardCapitalization.None,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
