@@ -1,28 +1,28 @@
 package ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.simplemobiletools.smsmessenger.R
 import ru.warr1on.simplesmsforwarding.presentation.core.components.FwdDefaultTextButton
+import ru.warr1on.simplesmsforwarding.presentation.core.components.FwdTextField
 import ru.warr1on.simplesmsforwarding.presentation.core.components.Spacer
 import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalHostExperimental
 import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalPopup
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.*
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.AddNewAddressDialogActions
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.AddNewAddressDialogState
 
@@ -52,8 +52,6 @@ private fun AddPhoneAddressDialogContent(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shouldShowTextClearButton = remember(state) { state.textFieldState.text.isNotEmpty() }
-
     Column(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface)
@@ -72,11 +70,15 @@ private fun AddPhoneAddressDialogContent(
 
         Spacer(16.dp)
 
-        AddPhoneAddressDialogTextField(
+        FwdTextField(
             text = state.textFieldState.text,
             onValueChange = { actions.onTextInputRequest(it) },
-            onClearInputRequest = { actions.onTextInputRequest("") },
-            shouldShowClearButton = shouldShowTextClearButton
+            placeholderText = "New number",
+            supportingText = state.textFieldState.supportingText,
+            isError = state.textFieldState.isError,
+            leadingIcon = { Icon(imageVector = Icons.Filled.Phone, contentDescription = null) },
+            singleLine = true,
+            capitalization = KeyboardCapitalization.None
         )
 
         AddPhoneAddressDialogActionButtons(
@@ -91,44 +93,6 @@ private fun AddPhoneAddressDialogContent(
                 .padding(vertical = 8.dp)
         )
     }
-}
-
-@Composable
-private fun AddPhoneAddressDialogTextField(
-    text: String,
-    onValueChange: (String) -> Unit,
-    onClearInputRequest: () -> Unit,
-    shouldShowClearButton: Boolean
-) {
-    TextField(
-        value = text,
-        onValueChange = onValueChange,
-        singleLine = true,
-        placeholder = {
-            Text(
-                text = "New number",
-                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        },
-        leadingIcon = { Icon(imageVector = Icons.Filled.Phone, contentDescription = null) },
-        trailingIcon = {
-            AnimatedVisibility(
-                visible = shouldShowClearButton,
-                enter = fadeIn() + scaleIn(spring()),
-                exit = fadeOut() + scaleOut(spring())
-            ) {
-                IconButton(
-                    onClick = onClearInputRequest
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cancel_circled),
-                        contentDescription = "Clear input"
-                    )
-                }
-            }
-        }
-    )
 }
 
 @Composable
