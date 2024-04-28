@@ -8,5 +8,11 @@ data class ForwardSmsResponse(
     val result: String,
 
     @SerializedName("result_description")
-    val resultDescription: String
+    val resultDescription: String,
+
+    @SerializedName("number_of_recipients")
+    val numberOfRecipients: Int?,
+
+    @SerializedName("recipients")
+    val recipients: List<String>?
 )

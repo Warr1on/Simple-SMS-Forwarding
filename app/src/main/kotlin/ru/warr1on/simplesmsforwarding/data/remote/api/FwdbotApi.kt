@@ -1,4 +1,4 @@
-package ru.warr1on.simplesmsforwarding.data.remote.service
+package ru.warr1on.simplesmsforwarding.data.remote.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -12,17 +12,18 @@ import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsRequest
 import ru.warr1on.simplesmsforwarding.data.remote.dto.ForwardSmsResponse
 import java.util.concurrent.TimeUnit
 
-interface FwdbotService {
+interface FwdbotApi {
 
     @Headers("Content-Type:application/json")
     @POST("forward/sms")
     suspend fun postSmsForwardingRequest(@Body request: ForwardSmsRequest): ForwardSmsResponse
 
+    // TODO: remove this part after migration to DI-provided networking dependencies
     companion object {
 
-        private var sharedService: FwdbotService? = null
+        private var sharedService: FwdbotApi? = null
 
-        fun get(): FwdbotService {
+        fun get(): FwdbotApi {
             var service = sharedService
             return if (service != null) {
                 service
@@ -33,7 +34,7 @@ interface FwdbotService {
             }
         }
 
-        private fun createService(): FwdbotService {
+        private fun createService(): FwdbotApi {
             val logger = HttpLoggingInterceptor()
             logger.setLevel(HttpLoggingInterceptor.Level.BODY)
 
@@ -48,7 +49,7 @@ interface FwdbotService {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
 
-            return retrofit.create(FwdbotService::class.java)
+            return retrofit.create(FwdbotApi::class.java)
         }
     }
 }
