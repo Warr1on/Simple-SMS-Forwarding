@@ -1,16 +1,19 @@
 package ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,7 +31,7 @@ fun ForwardingRuleEditorPhoneAddressEntry(
         elevation = 1.dp,
         disableShadow = true,
         useOutlineForDarkTheme = false,
-        modifier = Modifier.padding(vertical = 8.dp)
+        modifier = modifier.padding(vertical = 8.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -57,38 +60,6 @@ fun ForwardingRuleEditorPhoneAddressEntry(
             }
         }
     }
-
-//    Column(
-//        modifier = modifier.sizeIn(minHeight = 46.dp)
-//    ) {
-//
-//        Row(
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Column {
-//                Spacer(16.dp)
-//
-//                Text(
-//                    text = phoneAddress,
-//                    fontSize = 18.sp
-//                )
-//
-//                Spacer(16.dp)
-//            }
-//
-//            Spacer()
-//
-//            IconButton(onClick = { onRemovePhoneAddress(phoneAddress) }) {
-//                Icon(
-//                    imageVector = Icons.Filled.Clear,
-//                    contentDescription = "Remove number",
-//                    tint = MaterialTheme.colorScheme.error
-//                )
-//            }
-//        }
-//
-//        HorizontalDivider(thickness = 0.5.dp)
-//    }
 }
 
 
