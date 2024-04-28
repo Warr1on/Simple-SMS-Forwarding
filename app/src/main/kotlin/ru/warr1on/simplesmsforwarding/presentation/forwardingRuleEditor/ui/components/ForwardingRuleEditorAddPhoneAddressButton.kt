@@ -22,11 +22,12 @@ import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 @Composable
 fun ForwardingRuleEditorAddPhoneAddressButton(
     onAddNewAddressClicked: () -> Unit,
-    onAddFromKnownClicked: () -> Unit
+    onAddFromKnownClicked: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .background(color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(12.dp))
             .padding(8.dp)
     ) {
