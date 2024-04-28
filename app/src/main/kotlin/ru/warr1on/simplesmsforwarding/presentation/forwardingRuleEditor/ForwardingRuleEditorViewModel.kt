@@ -269,13 +269,25 @@ class ForwardingRuleEditorViewModel(
     private fun onPhoneAddressInputChangeRequest(proposedNewText: String) {
 
         val canAddThisAddressToRule = canAddPhoneAddressToRule(proposedNewText)
+        val inputDuplicatesAlreadyAddedAddress = isPhoneAddressDuplicatesAlreadyAddedAddress(proposedNewText)
+        val inputIsBlank = proposedNewText.isBlank()
+
+        val supportingText: String? = if (inputIsBlank) {
+            "Number cannot be blank"
+        } else if (inputDuplicatesAlreadyAddedAddress) {
+            "This number is already added to the rule"
+        } else {
+            null
+        }
+
+        val isError = inputIsBlank || inputDuplicatesAlreadyAddedAddress
 
         _screenState.update { it.copy(
             addNewAddressDialogState = AddNewAddressDialogState.Showing(
                 textFieldState = TextFieldState(
                     text = proposedNewText,
-                    isError = false,
-                    supportingText = null,
+                    isError = isError,
+                    supportingText = supportingText,
                 ),
                 canAddCurrentInputAsAddress = canAddThisAddressToRule
             )
