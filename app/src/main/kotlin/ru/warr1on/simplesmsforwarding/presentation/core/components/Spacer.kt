@@ -1,9 +1,12 @@
 package ru.warr1on.simplesmsforwarding.presentation.core.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+
+//region General purpose spacers
 
 /**
  * Creates a vertical spacer.
@@ -50,6 +53,10 @@ fun HorizontalSpacer(
 
     Spacer(spacerModifier)
 }
+
+//endregion
+
+//region Row and column spacers
 
 /**
  * Creates a vertical spacer.
@@ -106,3 +113,53 @@ fun RowScope.Spacer(
 
     Spacer(spacerModifier)
 }
+
+//endregion
+
+//region Lazy list spacers
+
+/**
+ * Creates a vertical spacer wrapped in a lazy list's `item`
+ *
+ * @param height Height of the spacer in DP
+ * @param key A stable and unique key representing the item. Using the same key
+ * for multiple items in the list is not allowed. Type of the key should be saveable
+ * via Bundle on Android. If null is passed the position in the list will represent the key.
+ * When you specify the key the scroll position will be maintained based on the key, which
+ * means if you add/remove items before the current visible item the item with the given key
+ * will be kept as the first visible one.
+ * @param modifier An optional modifier for the spacer composable
+ */
+fun LazyListScope.verticalSpacer(
+    height: Dp,
+    key: Any? = null,
+    modifier: Modifier = Modifier
+) {
+    item(key = key) {
+        Spacer(modifier.height(height))
+    }
+}
+
+/**
+ * Creates a horizontal spacer wrapped in a lazy list's `item`
+ *
+ * @param width Width of the spacer in DP
+ * @param key A stable and unique key representing the item. Using the same key
+ * for multiple items in the list is not allowed. Type of the key should be saveable
+ * via Bundle on Android. If null is passed the position in the list will represent the key.
+ * When you specify the key the scroll position will be maintained based on the key, which
+ * means if you add/remove items before the current visible item the item with the given key
+ * will be kept as the first visible one.
+ * @param modifier An optional modifier for the spacer composable
+ */
+fun LazyListScope.horizontalSpacer(
+    width: Dp,
+    key: Any? = null,
+    modifier: Modifier = Modifier
+) {
+    item(key = key) {
+        Spacer(modifier.width(width))
+    }
+}
+
+//endregion
