@@ -4,18 +4,15 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,8 +27,9 @@ import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalHo
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.*
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorViewModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.*
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorViewModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.ForwardingRuleEditorAddPhoneAddressButton
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.ForwardingRuleEditorAddPhoneAddressDialog
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.ForwardingRuleEditorPhoneAddressEntry
@@ -89,8 +87,6 @@ private fun ForwardingRuleEditorLayout(
     actions: ForwardingRuleEditorScreenActions,
     onCompletion: () -> Unit
 ) {
-    val contentScrollState = rememberScrollState()
-
     FwdDefaultTopAppBarScaffold(
         navbarTitle = screenState.screenTitle,
         navigationIcon = {
@@ -105,7 +101,6 @@ private fun ForwardingRuleEditorLayout(
             screenState = screenState,
             actions = actions,
             modifier = Modifier
-                .verticalScroll(contentScrollState)
                 .fillMaxSize()
                 .padding(paddingValues)
         )
@@ -123,114 +118,120 @@ private fun ForwardingRuleEditor(
     actions: ForwardingRuleEditorScreenActions,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    LazyColumn(modifier = modifier) {
 
-        Spacer(8.dp)
+        verticalSpacer(8.dp, key = "topmost_spacer".hashCode())
 
-        ForwardingRuleEditorTextField(
-            headerText = "Rule name",
-            state = screenState.ruleNameTextFieldState,
-            actions = actions.ruleNameTextFieldActions,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        textFieldsComponent(
+            ruleNameTextFieldState = screenState.ruleNameTextFieldState,
+            ruleNameTextFieldActions = actions.ruleNameTextFieldActions,
+            messageTypeKeyTextFieldState = screenState.messageTypeTextFieldState,
+            messageTypeKeyTextFieldActions = actions.messageTypeKeyTextFieldActions
         )
 
-        ForwardingRuleEditorTextField(
-            headerText = "Message type key",
-            state = screenState.messageTypeTextFieldState,
-            actions = actions.messageTypeKeyTextFieldActions,
-            capitalization = KeyboardCapitalization.None,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
+        sectionHeader("Apply to numbers:")
 
-        VerticalSpacer(height = 16.dp)
-
-        FwdSectionHeader(
-            title = "Apply to numbers:",
-            modifier = Modifier.padding(start = 16.dp)
-        )
-
-        Spacer(height = 4.dp)
-
-        PhoneAddressesBlock(
+        phoneAddressesComponent(
             state = screenState.addressesBlockState,
             actions = actions.addressesComponentActions
         )
 
-        VerticalSpacer(height = 16.dp)
+        sectionHeader("Text filters:")
 
-        FwdSectionHeader(
-            title = "Text filters:",
-            modifier = Modifier.padding(start = 16.dp)
-        )
-
-        Spacer(4.dp)
-
-        FiltersBlock(
+        filtersComponent(
             state = screenState.filtersBlockState,
             actions = actions.filtersComponentActions
         )
 
-        Spacer(32.dp)
+        verticalSpacer(8.dp, key = "bottommost_spacer".hashCode())
     }
 }
 
 //endregion
 
-//region Addresses UI block
+//region Rule editor UI components
 
-@Composable
-private fun PhoneAddressesBlock(
-    state: ForwardingRuleEditorScreenState.AddressesBlockState,
+private fun LazyListScope.sectionHeader(
+    headerTitleText: String
+) {
+    item(key = "section_header#$headerTitleText".hashCode()) {
+        VerticalSpacer(height = 16.dp)
+
+        FwdSectionHeader(
+            title = headerTitleText,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+
+        VerticalSpacer(4.dp)
+    }
+}
+
+private fun LazyListScope.textFieldsComponent(
+    ruleNameTextFieldState: TextFieldState,
+    ruleNameTextFieldActions: TextFieldActions,
+    messageTypeKeyTextFieldState: TextFieldState,
+    messageTypeKeyTextFieldActions: TextFieldActions
+) {
+    item(key = "rule_name_text_field_section".hashCode()) {
+        ForwardingRuleEditorTextField(
+            headerText = "Rule name",
+            state = ruleNameTextFieldState,
+            actions = ruleNameTextFieldActions,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+
+    item(key = "msgtype_key_text_field_section".hashCode()) {
+        ForwardingRuleEditorTextField(
+            headerText = "Message type key",
+            state = messageTypeKeyTextFieldState,
+            actions = messageTypeKeyTextFieldActions,
+            capitalization = KeyboardCapitalization.None,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+}
+
+private fun LazyListScope.phoneAddressesComponent(
+    state: AddressesBlockState,
     actions: AddressesComponentActions
 ) {
-    val shouldShowAddAddressDialog = remember { mutableStateOf(false) }
-    val shouldShowAddFromKnownDialog = remember { mutableStateOf(false) }
-
-    val onAddNewAddressClicked = remember {
-        { shouldShowAddAddressDialog.value = true }
-    }
-    val onAddFromKnownClicked = remember {
-        { shouldShowAddFromKnownDialog.value = true }
+    if (state.addresses.isEmpty()) {
+        item(key = "empty_addresses_placeholder".hashCode()) {
+            EmptyAddressesPlaceholder(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
     }
 
-    AnimatedContent(
-        targetState = state.addresses,
-        label = "address_block_content_anim"
-    ) { addresses ->
+    items(
+        items = state.addresses,
+        key = { "added_address#$it" }
+    ) { address ->
+        ForwardingRuleEditorPhoneAddressEntry(
+            phoneAddress = address,
+            onRemovePhoneAddress = actions.onRemoveAddressRequest,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
 
-        if (addresses.isNotEmpty()) {
-            LazyColumn(
-                userScrollEnabled = false,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
+    item(key = "add_address_button".hashCode()) {
+        AddPhoneAddressButton(
+            onAddAddressClicked = actions.onAddNewAddressRequest,
+            onAddFromKnownClicked = actions.onAddFromKnownRequest
+        )
+    }
+}
 
-                items(addresses) {  address ->
-                    ForwardingRuleEditorPhoneAddressEntry(
-                        phoneAddress = address,
-                        onRemovePhoneAddress = actions.onRemoveAddressRequest
-                    )
-                }
-
-                item {
-                    AddPhoneAddressButton(
-                        onAddAddressClicked = onAddNewAddressClicked,
-                        onAddFromKnownClicked = onAddFromKnownClicked
-                    )
-                }
-            }
-        } else {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                EmptyAddressesPlaceholder(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
-                AddPhoneAddressButton(
-                    onAddAddressClicked = actions.onAddNewAddressRequest,
-                    onAddFromKnownClicked = actions.onAddFromKnownRequest
-                )
-            }
+private fun LazyListScope.filtersComponent(
+    state: FiltersBlockState,
+    actions: FiltersComponentActions
+) {
+    if (state.filters.isEmpty()) {
+        item(key = "no_filters_placeholder".hashCode()) {
+            EmptyFiltersPlaceholder(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
     }
 }
@@ -238,40 +239,22 @@ private fun PhoneAddressesBlock(
 @Composable
 private fun AddPhoneAddressButton(
     onAddAddressClicked: () -> Unit,
-    onAddFromKnownClicked: () -> Unit
+    onAddFromKnownClicked: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     VerticalSpacer(height = 8.dp)
 
-    ForwardingRuleEditorAddPhoneAddressButton(
-        onAddNewAddressClicked = onAddAddressClicked,
-        onAddFromKnownClicked = onAddFromKnownClicked
-    )
-
-    VerticalSpacer(height = 8.dp)
-}
-
-//endregion
-
-//region Filters UI block
-
-@Composable
-private fun FiltersBlock(
-    state: ForwardingRuleEditorScreenState.FiltersBlockState,
-    actions: FiltersComponentActions
-) {
-    AnimatedContent(
-        targetState = state.filters,
-        label = "filters_block_content_anim"
-    ) { filters ->
-
-        if (filters.isNotEmpty()) {
-            Text("stub")
-        } else {
-            EmptyFiltersPlaceholder(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
+    Row {
+        Spacer()
+        ForwardingRuleEditorAddPhoneAddressButton(
+            onAddNewAddressClicked = onAddAddressClicked,
+            onAddFromKnownClicked = onAddFromKnownClicked,
+            modifier = modifier
+        )
+        Spacer()
     }
+
+    VerticalSpacer(height = 8.dp)
 }
 
 //endregion
@@ -362,27 +345,27 @@ private fun generatePreviewScreenState(): ForwardingRuleEditorScreenState {
     )
     val addressesEmpty = emptyList<String>()
 
-    val ruleNameTextFieldState = ForwardingRuleEditorScreenState.TextFieldState(
+    val ruleNameTextFieldState = TextFieldState(
         text = "Some rule name",
         isError = false,
         supportingText = ""
     )
 
-    val messageTypeKeyTextFieldState = ForwardingRuleEditorScreenState.TextFieldState(
+    val messageTypeKeyTextFieldState = TextFieldState(
         text = "some_msgtype_key",
         isError = false,
         supportingText = ""
     )
 
-    val addressesBlockState = ForwardingRuleEditorScreenState.AddressesBlockState(
-        addresses = addressesEmpty
+    val addressesBlockState = AddressesBlockState(
+        addresses = addresses
     )
 
-    val filtersBlockState = ForwardingRuleEditorScreenState.FiltersBlockState(
+    val filtersBlockState = FiltersBlockState(
         filters = emptyList()
     )
 
-    val addNewAddressDialogState = ForwardingRuleEditorScreenState.AddNewAddressDialogState.NotShowing
+    val addNewAddressDialogState = AddNewAddressDialogState.NotShowing
 
     return ForwardingRuleEditorScreenState(
         screenTitle = "Rule editor",
