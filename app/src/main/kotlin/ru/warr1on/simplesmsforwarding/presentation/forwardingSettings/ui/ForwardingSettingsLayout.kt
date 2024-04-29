@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.warr1on.simplesmsforwarding.presentation.core.extensions.verticalSpacer
+import ru.warr1on.simplesmsforwarding.presentation.core.components.verticalSpacer
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingSettings.ui.components.ForwarderSettingHeader

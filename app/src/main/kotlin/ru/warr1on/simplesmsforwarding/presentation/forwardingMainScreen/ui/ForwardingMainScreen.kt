@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.simplemobiletools.smsmessenger.R
 import org.koin.androidx.compose.koinViewModel
-import ru.warr1on.simplesmsforwarding.presentation.core.extensions.verticalSpacer
+import ru.warr1on.simplesmsforwarding.presentation.core.components.verticalSpacer
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 import ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.ForwardingMainScreenViewModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingMainScreen.ui.components.ForwardableMessageView
