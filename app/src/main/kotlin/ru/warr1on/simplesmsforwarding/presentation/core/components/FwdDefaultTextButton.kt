@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.simplemobiletools.commons.compose.extensions.ifTrue
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 
 /**
@@ -56,18 +55,25 @@ fun FwdDefaultTextButton(
     }
     val textColor by animateColorAsState(targetValue = colorToUse, label = "btn_txt_color")
 
-    Box(
-        modifier
-            .clip(MaterialTheme.shapes.small)
-            .ifTrue(enabled) {
-                Modifier.clickable(
+    val containerModifier = when (enabled) {
+        true -> {
+            modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable(
                     interactionSource = interactionSource,
                     indication = ripple,
                     onClick = onClick
                 )
-            }
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-    ) {
+                .padding(horizontal = 8.dp, vertical = 8.dp)
+        }
+        false -> {
+            modifier
+                .clip(MaterialTheme.shapes.small)
+                .padding(horizontal = 8.dp, vertical = 8.dp)
+        }
+    }
+
+    Box(modifier = containerModifier) {
         Text(
             text = text,
             fontSize = 18.sp,
