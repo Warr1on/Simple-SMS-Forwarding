@@ -15,10 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -116,11 +118,18 @@ fun <SegmentIdType> SegmentedButton(
                 )
             }
         },
+        separators = {
+            for (index in 1 until segmentData.size) {
+                SegmentSeparator(
+                    isVisible = (index != selectedSegmentIndex + 1) && (index != selectedSegmentIndex)
+                )
+            }
+        },
         selectedSegmentIndex = selectedSegmentIndex,
         selectionIndicator = {
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.background)
             )
         },
@@ -138,6 +147,7 @@ fun <SegmentIdType> SegmentedButton(
 @Composable
 private fun SegmentedButtonLayout(
     segments: @Composable () -> Unit,
+    separators: @Composable () -> Unit,
     selectionIndicator: @Composable () -> Unit,
     selectedSegmentIndex: Int,
     modifier: Modifier = Modifier
@@ -155,6 +165,8 @@ private fun SegmentedButtonLayout(
             targetValue = selectedSegmentIndex.toFloat() * segmentMeasuredWidth
         )
     }
+
+    val density = LocalDensity.current
 
     SubcomposeLayout(
         modifier = modifier
@@ -189,6 +201,27 @@ private fun SegmentedButtonLayout(
             )
         }.first()
 
+        val separatorPadding = 8.dp
+        val separatorWidth = with (density) { 1.dp.toPx().toInt() }
+        val separatorHeight = with(density) {
+            val padding = separatorPadding.toPx().toInt()
+            layoutHeight - padding
+        }
+        val separatorYOffset = with(density) {
+            (separatorPadding / 2).toPx().toInt()
+        }
+
+        val separatorPlaceables = subcompose(3, separators).map {
+            it.measure(
+                constraints.copy(
+                    minWidth = separatorWidth,
+                    maxWidth = segmentWidth,
+                    minHeight = separatorHeight,
+                    maxHeight = separatorHeight
+                )
+            )
+        }
+
         layout(
             width = constraints.maxWidth,
             height = layoutHeight
@@ -197,10 +230,18 @@ private fun SegmentedButtonLayout(
                 placeable.place(index * segmentWidth, 0, 1f)
             }
 
+            separatorPlaceables.forEachIndexed { index, placeable ->
+                placeable.place(
+                    x = (index + 1) * segmentWidth,
+                    y = separatorYOffset,
+                    zIndex = 0.1f
+                )
+            }
+
             selectionIndicatorPlaceable.place(
                 x = selectionIndicatorOffset.value.toInt(),
                 y = 0,
-                zIndex = 0.1f
+                zIndex = 0.2f
             )
         }
     }
@@ -247,6 +288,26 @@ private fun <T> ButtonSegment(
             }
         }
     }
+}
+
+@Composable
+private fun SegmentSeparator(
+    isVisible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val alphaFor: (isVisible: Boolean) -> Float = remember {
+        { if (it) 1f else 0f }
+    }
+    val alpha = remember { Animatable(alphaFor(isVisible)) }
+    LaunchedEffect(isVisible) {
+        alpha.animateTo(alphaFor(isVisible))
+    }
+
+    Box(
+        modifier = modifier
+            .alpha(alpha.value)
+            .background(MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f))
+    )
 }
 
 //endregion
