@@ -1,6 +1,10 @@
 package ru.warr1on.simplesmsforwarding.presentation.core.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -106,6 +111,7 @@ fun <SegmentIdType> SegmentedButton(
             segmentData.forEach { segmentData ->
                 ButtonSegment(
                     segmentData = segmentData,
+                    isSelected = segmentData.segmentID == selection,
                     onClick = { onSegmentSelectionChange(segmentData.segmentID) }
                 )
             }
@@ -203,10 +209,17 @@ private fun SegmentedButtonLayout(
 @Composable
 private fun <T> ButtonSegment(
     segmentData: SegmentData<T>,
+    isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val textWeight = remember(isSelected) {
+        return@remember when (isSelected) {
+            true -> FontWeight.Medium
+            false -> FontWeight.Normal
+        }
+    }
 
     Box(
         contentAlignment = Alignment.Center,
@@ -219,12 +232,19 @@ private fun <T> ButtonSegment(
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         if (segmentData.text != null) {
-            Text(
-                text = segmentData.text,
-                fontSize = 14.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            AnimatedContent(
+                targetState = textWeight,
+                transitionSpec = { fadeIn().togetherWith(fadeOut()) },
+                label = "segbtn_segment_text_anim"
+            ) { weight ->
+                Text(
+                    text = segmentData.text,
+                    fontSize = 14.sp,
+                    fontWeight = weight,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
