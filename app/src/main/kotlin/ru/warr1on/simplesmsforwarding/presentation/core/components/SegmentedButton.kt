@@ -22,10 +22,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -113,6 +115,8 @@ fun <SegmentIdType> SegmentedButton(
          return@remember index ?: 0
     }
 
+    val density = LocalDensity.current
+
     SegmentedButtonLayout(
         segments = {
             segmentData.forEach { segmentData ->
@@ -136,6 +140,10 @@ fun <SegmentIdType> SegmentedButton(
         selectionIndicator = {
             Box(
                 modifier = Modifier
+                    .graphicsLayer {
+                        shape = RoundedCornerShape(8.dp)
+                        shadowElevation = with(density) { 3.dp.toPx() }
+                    }
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.background)
             )
@@ -318,14 +326,16 @@ private fun <T> ButtonSegment(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
+                onClickLabel = segmentData.contentDescription,
+                role = Role.Button
             )
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         if (segmentData.iconPainter != null) {
             Icon(
                 painter = segmentData.iconPainter,
-                contentDescription = "",
+                contentDescription = null,
                 tint = iconColor.value,
                 modifier = Modifier
                     .size(24.dp)
@@ -334,7 +344,7 @@ private fun <T> ButtonSegment(
         } else if (segmentData.iconVector != null) {
             Icon(
                 imageVector = segmentData.iconVector,
-                contentDescription = "",
+                contentDescription = null,
                 tint = iconColor.value,
                 modifier = Modifier
                     .size(24.dp)
@@ -412,12 +422,18 @@ interface SegmentedButtonScope<SegmentIdType> {
      *
      * @param painter The painter that will be used to draw the icon that will
      * be displayed in that segment
+     * @param contentDescription Content description that is used for accessibility
+     * purposes
      * @param segmentID The unique identifier that is used for this segment.
      * Can be of any type, but all of the segments must share the same ID type.
      * Usually you'd want an enum value as the ID for the segment, but you can
      * also use something like a simple integer to identify your segments.
      */
-    fun segmentWithIcon(painter: Painter, segmentID: SegmentIdType)
+    fun segmentWithIcon(
+        painter: Painter,
+        contentDescription: String?,
+        segmentID: SegmentIdType
+    )
 
     /**
      * Adds a segment with the provided icon as its content. This variant
@@ -426,12 +442,18 @@ interface SegmentedButtonScope<SegmentIdType> {
      *
      * @param imageVector The image vector that will be used to draw the icon that
      * will be displayed in that segment
+     * @param contentDescription Content description that is used for accessibility
+     * purposes
      * @param segmentID The unique identifier that is used for this segment.
      * Can be of any type, but all of the segments must share the same ID type.
      * Usually you'd want an enum value as the ID for the segment, but you can
      * also use something like a simple integer to identify your segments.
      */
-    fun segmentWithIcon(imageVector: ImageVector, segmentID: SegmentIdType)
+    fun segmentWithIcon(
+        imageVector: ImageVector,
+        contentDescription: String?,
+        segmentID: SegmentIdType
+    )
 
     /**
      * Adds a segment with the provided icon and text as its content. This variant
@@ -446,7 +468,11 @@ interface SegmentedButtonScope<SegmentIdType> {
      * Usually you'd want an enum value as the ID for the segment, but you can
      * also use something like a simple integer to identify your segments.
      */
-    fun segmentWithIconAndText(painter: Painter, text: String, segmentID: SegmentIdType)
+    fun segmentWithIconAndText(
+        painter: Painter,
+        text: String,
+        segmentID: SegmentIdType
+    )
 
     /**
      * Adds a segment with the provided icon and text as its content. This variant
@@ -461,13 +487,18 @@ interface SegmentedButtonScope<SegmentIdType> {
      * Usually you'd want an enum value as the ID for the segment, but you can
      * also use something like a simple integer to identify your segments.
      */
-    fun segmentWithIconAndText(imageVector: ImageVector, text: String, segmentID: SegmentIdType)
+    fun segmentWithIconAndText(
+        imageVector: ImageVector,
+        text: String,
+        segmentID: SegmentIdType
+    )
 }
 
 private data class SegmentData<SegmentIdType>(
     val text: String? = null,
     val iconPainter: Painter? = null,
     val iconVector: ImageVector? = null,
+    val contentDescription: String? = text,
     val segmentID: SegmentIdType,
     val segmentIndex: Int
 )
@@ -481,12 +512,28 @@ private class SegmentedButtonScopeImpl<SegmentIdType> : SegmentedButtonScope<Seg
         addSegment(segmentID = segmentID, text = text)
     }
 
-    override fun segmentWithIcon(painter: Painter, segmentID: SegmentIdType) {
-        addSegment(segmentID = segmentID, painter = painter)
+    override fun segmentWithIcon(
+        painter: Painter,
+        contentDescription: String?,
+        segmentID: SegmentIdType
+    ) {
+        addSegment(
+            segmentID = segmentID,
+            painter = painter,
+            contentDescription = contentDescription
+        )
     }
 
-    override fun segmentWithIcon(imageVector: ImageVector, segmentID: SegmentIdType) {
-        addSegment(segmentID = segmentID, imageVector = imageVector)
+    override fun segmentWithIcon(
+        imageVector: ImageVector,
+        contentDescription: String?,
+        segmentID: SegmentIdType
+    ) {
+        addSegment(
+            segmentID = segmentID,
+            imageVector = imageVector,
+            contentDescription = contentDescription
+        )
     }
 
     override fun segmentWithIconAndText(
@@ -517,7 +564,8 @@ private class SegmentedButtonScopeImpl<SegmentIdType> : SegmentedButtonScope<Seg
         segmentID: SegmentIdType,
         text: String? = null,
         painter: Painter? = null,
-        imageVector: ImageVector? = null
+        imageVector: ImageVector? = null,
+        contentDescription: String? = null,
     ) {
         val segmentIndex = _segmentData.size
 
@@ -527,7 +575,8 @@ private class SegmentedButtonScopeImpl<SegmentIdType> : SegmentedButtonScope<Seg
                 segmentID = segmentID,
                 text = text,
                 iconPainter = painter,
-                iconVector = imageVector
+                iconVector = imageVector,
+                contentDescription = contentDescription
             )
         )
     }
@@ -624,9 +673,9 @@ private fun SegmentedButtons_Preview_IconSegments() {
                     selection = selection,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    segmentWithIcon(firstIcon, 0)
-                    segmentWithIcon(secondIcon, 1)
-                    segmentWithIcon(thirdIcon, 2)
+                    segmentWithIcon(firstIcon, null, 0)
+                    segmentWithIcon(secondIcon, null, 1)
+                    segmentWithIcon(thirdIcon, null, 2)
                     //segmentWithIconAndText(Icons.Outlined.AccountCircle, "Home", 3)
                 }
 
@@ -660,9 +709,9 @@ private fun SegmentedButtons_Preview_Compact() {
                     selection = selection,
                     modifier = Modifier
                 ) {
-                    segmentWithIcon(firstIcon, 0)
-                    segmentWithIcon(secondIcon, 1)
-                    segmentWithIcon(thirdIcon, 2)
+                    segmentWithIcon(firstIcon, null, 0)
+                    segmentWithIcon(secondIcon, null, 1)
+                    segmentWithIcon(thirdIcon, null, 2)
                 }
 
                 Spacer(16.dp)
