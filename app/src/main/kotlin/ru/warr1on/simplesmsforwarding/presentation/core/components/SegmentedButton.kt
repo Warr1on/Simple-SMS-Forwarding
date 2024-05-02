@@ -43,7 +43,7 @@ import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
  * straightforward to use; but this may not always be the preferred way of doing
  * things, and if you need more direct control over the selection (for example, if
  * your segmented button selection state is hoisted in the view model as a part of
- * a screen state data class, or if you want to be able to veto a selection change),
+ * a screen state data class, or if you want to be able to veto the selection change),
  * use the overload with the selectedSegment and onSegmentSelectionChange parameters.
  *
  * @param selection The selection param represents the currently selected section's ID
@@ -160,16 +160,16 @@ private fun SegmentedButtonLayout(
     modifier: Modifier = Modifier
 ) {
     var numberOfSegments by remember(segments) { mutableIntStateOf(0) }
-    var segmentMeasuredWidth by remember(segments) { mutableIntStateOf(0) }
+    var calculatedSegmentWidth by remember(segments) { mutableIntStateOf(0) }
 
     val selectionIndicatorOffset = remember(segments) {
         Animatable(
-            initialValue = selectedSegmentIndex.toFloat() * segmentMeasuredWidth
+            initialValue = selectedSegmentIndex.toFloat() * calculatedSegmentWidth
         )
     }
     LaunchedEffect(selectedSegmentIndex) {
         selectionIndicatorOffset.animateTo(
-            targetValue = selectedSegmentIndex.toFloat() * segmentMeasuredWidth
+            targetValue = selectedSegmentIndex.toFloat() * calculatedSegmentWidth
         )
     }
 
@@ -178,25 +178,35 @@ private fun SegmentedButtonLayout(
     SubcomposeLayout(
         modifier = modifier
     ) { constraints ->
+
+        // Get the segment measurables
         val segmentMeasurables = subcompose(1, segments)
-
-        val segmentWidth = when (segmentMeasurables.size) {
-            0 -> 0
-            else -> constraints.maxWidth / segmentMeasurables.size
+        // Calculate the segment width
+        val segmentWidth = segmentMeasurables.let { measurables ->
+            if (measurables.isEmpty()) return@let 0
+            val largestSegmentWidth = measurables.maxOfOrNull { it.minIntrinsicWidth(0) } ?: 0
+            largestSegmentWidth.coerceAtLeast(constraints.minWidth / segmentMeasurables.size)
         }
-
-        numberOfSegments = segmentMeasurables.size
-        segmentMeasuredWidth = segmentWidth
-
+        // Measure the segments
         val segmentPlaceables = segmentMeasurables.map {
             it.measure(constraints.copy(maxWidth = segmentWidth, minWidth = segmentWidth))
         }
 
+        // Set the values necessary for the selection indicator's animation to work
+        numberOfSegments = segmentMeasurables.size
+        calculatedSegmentWidth = segmentWidth
+
+        // Calculate the whole layout's width and height
+        val layoutWidth = (segmentWidth * segmentPlaceables.size)
         val layoutHeight = when (segmentPlaceables.size) {
             0 -> 0
             else -> segmentPlaceables[0].height
         }
 
+        // Get and measure the selection indicator. Selection indicator is assumed
+        // to be just a single composable, and it's provided by the parent composable,
+        // so we can directly access it by calling `first` on the list of placeables,
+        // as we know for sure that it will be there.
         val selectionIndicatorPlaceable = subcompose(2, selectionIndicator).map {
             it.measure(
                 constraints.copy(
@@ -208,8 +218,9 @@ private fun SegmentedButtonLayout(
             )
         }.first()
 
+        // Setting up the separator layout values
         val separatorPadding = 8.dp
-        val separatorWidth = with (density) { 1.dp.toPx().toInt() }
+        val separatorWidth = with(density) { 1.dp.toPx().toInt() }
         val separatorHeight = with(density) {
             val padding = separatorPadding.toPx().toInt()
             layoutHeight - padding
@@ -217,7 +228,7 @@ private fun SegmentedButtonLayout(
         val separatorYOffset = with(density) {
             (separatorPadding / 2).toPx().toInt()
         }
-
+        // Measuring the segment separators
         val separatorPlaceables = subcompose(3, separators).map {
             it.measure(
                 constraints.copy(
@@ -229,12 +240,17 @@ private fun SegmentedButtonLayout(
             )
         }
 
+        // Laying out all of the measured placeables
         layout(
-            width = constraints.maxWidth,
+            width = layoutWidth,
             height = layoutHeight
         ) {
             segmentPlaceables.forEachIndexed { index, placeable ->
-                placeable.place(index * segmentWidth, 0, 1f)
+                placeable.place(
+                    x = index * segmentWidth,
+                    y = 0,
+                    zIndex = 1f
+                )
             }
 
             separatorPlaceables.forEachIndexed { index, placeable ->
@@ -311,14 +327,18 @@ private fun <T> ButtonSegment(
                 painter = segmentData.iconPainter,
                 contentDescription = "",
                 tint = iconColor.value,
-                modifier = Modifier.scale(iconScale.value)
+                modifier = Modifier
+                    .size(24.dp)
+                    .scale(iconScale.value)
             )
         } else if (segmentData.iconVector != null) {
             Icon(
                 imageVector = segmentData.iconVector,
                 contentDescription = "",
                 tint = iconColor.value,
-                modifier = Modifier.scale(iconScale.value)
+                modifier = Modifier
+                    .size(24.dp)
+                    .scale(iconScale.value)
             )
         }
 
@@ -591,9 +611,9 @@ private fun SegmentedButtons_Preview_IconSegments() {
 
     val selection = remember { mutableIntStateOf(0) }
 
-    val firstIcon = Icons.Filled.Favorite
-    val secondIcon = Icons.Filled.Email
-    val thirdIcon = Icons.Filled.Home
+    val firstIcon = remember { Icons.Filled.Favorite }
+    val secondIcon = remember { Icons.Filled.Email }
+    val thirdIcon = remember { Icons.Filled.Home }
 
     AppTheme {
         PreviewBox {
@@ -608,6 +628,41 @@ private fun SegmentedButtons_Preview_IconSegments() {
                     segmentWithIcon(secondIcon, 1)
                     segmentWithIcon(thirdIcon, 2)
                     //segmentWithIconAndText(Icons.Outlined.AccountCircle, "Home", 3)
+                }
+
+                Spacer(16.dp)
+
+                Text("Selected segment: ${selection.value}")
+            }
+        }
+    }
+}
+
+
+//--- Compact segment button preview ---//
+
+@Preview
+@Composable
+private fun SegmentedButtons_Preview_Compact() {
+
+    val selection = remember { mutableIntStateOf(0) }
+
+    val firstIcon = remember { Icons.Filled.Favorite }
+    val secondIcon = remember { Icons.Filled.Email }
+    val thirdIcon = remember { Icons.Filled.Home }
+
+    AppTheme {
+        PreviewBox {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                SegmentedButton(
+                    selection = selection,
+                    modifier = Modifier
+                ) {
+                    segmentWithIcon(firstIcon, 0)
+                    segmentWithIcon(secondIcon, 1)
+                    segmentWithIcon(thirdIcon, 2)
                 }
 
                 Spacer(16.dp)
