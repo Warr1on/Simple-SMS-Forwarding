@@ -1,15 +1,18 @@
 package ru.warr1on.simplesmsforwarding.presentation.core.components
 
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -17,9 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.*
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -121,6 +126,8 @@ fun <SegmentIdType> SegmentedButton(
         separators = {
             for (index in 1 until segmentData.size) {
                 SegmentSeparator(
+                    // The separator should be visible only if it's
+                    // not adjacent to the currently selected segment
                     isVisible = (index != selectedSegmentIndex + 1) && (index != selectedSegmentIndex)
                 )
             }
@@ -234,14 +241,14 @@ private fun SegmentedButtonLayout(
                 placeable.place(
                     x = (index + 1) * segmentWidth,
                     y = separatorYOffset,
-                    zIndex = 0.1f
+                    zIndex = 0.1f // Separators are on the lowest Z level
                 )
             }
 
             selectionIndicatorPlaceable.place(
                 x = selectionIndicatorOffset.value.toInt(),
                 y = 0,
-                zIndex = 0.2f
+                zIndex = 0.2f // Below the segments but above the separators
             )
         }
     }
@@ -255,15 +262,42 @@ private fun <T> ButtonSegment(
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val colorScheme = MaterialTheme.colorScheme
+
+    val hasIconAndText = remember(segmentData) {
+        (segmentData.text != null)
+            && (segmentData.iconPainter != null || segmentData.iconVector != null)
+    }
+
     val textWeight = remember(isSelected) {
-        return@remember when (isSelected) {
+        when (isSelected) {
             true -> FontWeight.Medium
             false -> FontWeight.Normal
         }
     }
 
-    Box(
-        contentAlignment = Alignment.Center,
+    val iconScaleFor: (isSelected: Boolean) -> Float = remember {
+        { if (it) 1f else 0.9f }
+    }
+    val iconScale = remember { Animatable(iconScaleFor(isSelected)) }
+    LaunchedEffect(isSelected) {
+        iconScale.animateTo(
+            targetValue = iconScaleFor(isSelected),
+            animationSpec = spring(dampingRatio = 0.7f, stiffness = 200f)
+        )
+    }
+
+    val iconColorFor: (isSelected: Boolean) -> Color = remember {
+        { if (it) colorScheme.onBackground else colorScheme.onSecondaryContainer }
+    }
+    val iconColor = remember { Animatable(iconColorFor(isSelected)) }
+    LaunchedEffect(isSelected) {
+        iconColor.animateTo(iconColorFor(isSelected))
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
         modifier = modifier
             .clickable(
                 interactionSource = interactionSource,
@@ -272,6 +306,26 @@ private fun <T> ButtonSegment(
             )
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
+        if (segmentData.iconPainter != null) {
+            Icon(
+                painter = segmentData.iconPainter,
+                contentDescription = "",
+                tint = iconColor.value,
+                modifier = Modifier.scale(iconScale.value)
+            )
+        } else if (segmentData.iconVector != null) {
+            Icon(
+                imageVector = segmentData.iconVector,
+                contentDescription = "",
+                tint = iconColor.value,
+                modifier = Modifier.scale(iconScale.value)
+            )
+        }
+
+        if (hasIconAndText) {
+            Spacer(4.dp)
+        }
+
         if (segmentData.text != null) {
             AnimatedContent(
                 targetState = textWeight,
@@ -523,6 +577,42 @@ private fun SegmentedButtons_Preview_EnumTyped() {
                 Spacer(16.dp)
 
                 Text("Selected segment: ${selection.value.textDescription}")
+            }
+        }
+    }
+}
+
+
+//--- Icon-based segment button preview ---//
+
+@Preview
+@Composable
+private fun SegmentedButtons_Preview_IconSegments() {
+
+    val selection = remember { mutableIntStateOf(0) }
+
+    val firstIcon = Icons.Filled.Favorite
+    val secondIcon = Icons.Filled.Email
+    val thirdIcon = Icons.Filled.Home
+
+    AppTheme {
+        PreviewBox {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                SegmentedButton(
+                    selection = selection,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    segmentWithIcon(firstIcon, 0)
+                    segmentWithIcon(secondIcon, 1)
+                    segmentWithIcon(thirdIcon, 2)
+                    //segmentWithIconAndText(Icons.Outlined.AccountCircle, "Home", 3)
+                }
+
+                Spacer(16.dp)
+
+                Text("Selected segment: ${selection.value}")
             }
         }
     }
