@@ -61,6 +61,7 @@ import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 fun <SegmentIdType> SegmentedButton(
     selection: MutableState<SegmentIdType>,
     modifier: Modifier = Modifier,
+    colorScheme: SegmentedButtonColorScheme = SegmentedButtonColorScheme.colorScheme(),
     segments: SegmentedButtonScope<SegmentIdType>.() -> Unit
 ) {
     SegmentedButton(
@@ -68,6 +69,7 @@ fun <SegmentIdType> SegmentedButton(
         onSegmentSelectionChange = { selection.value = it },
         segments = segments,
         modifier = modifier,
+        colorScheme = colorScheme
     )
 }
 
@@ -99,6 +101,7 @@ fun <SegmentIdType> SegmentedButton(
     selection: SegmentIdType,
     onSegmentSelectionChange: (selectedSegment: SegmentIdType) -> Unit,
     modifier: Modifier = Modifier,
+    colorScheme: SegmentedButtonColorScheme = SegmentedButtonColorScheme.colorScheme(),
     segments: SegmentedButtonScope<SegmentIdType>.() -> Unit
 ) {
 
@@ -123,7 +126,9 @@ fun <SegmentIdType> SegmentedButton(
                 ButtonSegment(
                     segmentData = segmentData,
                     isSelected = segmentData.segmentID == selection,
-                    onClick = { onSegmentSelectionChange(segmentData.segmentID) }
+                    onClick = { onSegmentSelectionChange(segmentData.segmentID) },
+                    contentColor = colorScheme.contentColor,
+                    selectedContentColor = colorScheme.selectedContentColor
                 )
             }
         },
@@ -132,7 +137,8 @@ fun <SegmentIdType> SegmentedButton(
                 SegmentSeparator(
                     // The separator should be visible only if it's
                     // not adjacent to the currently selected segment
-                    isVisible = (index != selectedSegmentIndex + 1) && (index != selectedSegmentIndex)
+                    isVisible = (index != selectedSegmentIndex + 1) && (index != selectedSegmentIndex),
+                    color = colorScheme.separatorColor
                 )
             }
         },
@@ -145,12 +151,12 @@ fun <SegmentIdType> SegmentedButton(
                         shadowElevation = with(density) { 3.dp.toPx() }
                     }
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(colorScheme.selectionIndicatorColor)
             )
         },
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .background(colorScheme.backgroundColor)
             .padding(4.dp)
     )
 }
@@ -165,7 +171,7 @@ private fun SegmentedButtonLayout(
     separators: @Composable () -> Unit,
     selectionIndicator: @Composable () -> Unit,
     selectedSegmentIndex: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var numberOfSegments by remember(segments) { mutableIntStateOf(0) }
     var calculatedSegmentWidth by remember(segments) { mutableIntStateOf(0) }
@@ -283,7 +289,9 @@ private fun <T> ButtonSegment(
     segmentData: SegmentData<T>,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentColor: Color,
+    selectedContentColor: Color
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val colorScheme = MaterialTheme.colorScheme
@@ -311,12 +319,14 @@ private fun <T> ButtonSegment(
         )
     }
 
-    val iconColorFor: (isSelected: Boolean) -> Color = remember {
-        { if (it) colorScheme.onBackground else colorScheme.onSecondaryContainer }
+    val contentColorFor: (isSelected: Boolean) -> Color = remember(contentColor, selectedContentColor) {
+        { if (it) selectedContentColor else contentColor }
     }
-    val iconColor = remember { Animatable(iconColorFor(isSelected)) }
+    val animatedContentColor = remember(contentColor, selectedContentColor) {
+        Animatable(contentColorFor(isSelected))
+    }
     LaunchedEffect(isSelected) {
-        iconColor.animateTo(iconColorFor(isSelected))
+        animatedContentColor.animateTo(contentColorFor(isSelected))
     }
 
     Row(
@@ -336,7 +346,7 @@ private fun <T> ButtonSegment(
             Icon(
                 painter = segmentData.iconPainter,
                 contentDescription = null,
-                tint = iconColor.value,
+                tint = animatedContentColor.value,
                 modifier = Modifier
                     .size(24.dp)
                     .scale(iconScale.value)
@@ -345,7 +355,7 @@ private fun <T> ButtonSegment(
             Icon(
                 imageVector = segmentData.iconVector,
                 contentDescription = null,
-                tint = iconColor.value,
+                tint = animatedContentColor.value,
                 modifier = Modifier
                     .size(24.dp)
                     .scale(iconScale.value)
@@ -367,7 +377,8 @@ private fun <T> ButtonSegment(
                     fontSize = 14.sp,
                     fontWeight = weight,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = animatedContentColor.value
                 )
             }
         }
@@ -377,7 +388,8 @@ private fun <T> ButtonSegment(
 @Composable
 private fun SegmentSeparator(
     isVisible: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    color: Color
 ) {
     val alphaFor: (isVisible: Boolean) -> Float = remember {
         { if (it) 1f else 0f }
@@ -390,8 +402,82 @@ private fun SegmentSeparator(
     Box(
         modifier = modifier
             .alpha(alpha.value)
-            .background(MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f))
+            .background(color.copy(alpha = 0.3f))
     )
+}
+
+//endregion
+
+//region Color scheme
+
+/**
+ * A color scheme for the [SegmentedButton].
+ *
+ * To create an instance with default values from your
+ * MaterialTheme, use the [colorScheme] companion function.
+ *
+ * @property backgroundColor The segmented button's background color.
+ * @property selectionIndicatorColor Color of the segmented button's selection indicator.
+ * @property separatorColor Color of the separators between segmented button's segments.
+ * Do note that the actual color will be less pronounced than the specified color, due
+ * to its alpha being reduced to 0.3 of original - that is done to make the separator
+ * more subtle and less standing out.
+ * @property contentColor Color of the segmented button's segment content when it is not
+ * selected. For this value you should use the color that would look good on the [backgroundColor].
+ * For setting the selected segment's content color, use the [selectedContentColor] param.
+ * @property selectedContentColor Color of the segmented button's segment content when it
+ * is selected. For this value you should use the color that would look good on the
+ * [selectionIndicatorColor].
+ */
+@Immutable
+data class SegmentedButtonColorScheme(
+    val backgroundColor: Color,
+    val selectionIndicatorColor: Color,
+    val separatorColor: Color,
+    val contentColor: Color,
+    val selectedContentColor: Color,
+) {
+
+    companion object {
+
+        /**
+         * Creates a color scheme for the [SegmentedButton].
+         *
+         * By default, without providing the specific value for a parameter, it will try
+         * to get the default value from the Material3's [MaterialTheme]. If you do not
+         * use the [MaterialTheme], you should provide your own value for each parameter.
+         *
+         * @param backgroundColor The segmented button's background color.
+         * @param selectionIndicatorColor Color of the segmented button's selection indicator.
+         * @param separatorColor Color of the separators between segmented button's segments.
+         * Do note that the actual color will be less pronounced than the specified color, due
+         * to its alpha being reduced to 0.3 of original - that is done to make the separator
+         * more subtle and less standing out.
+         * @param contentColor Color of the segmented button's segment content when it is not
+         * selected. For this value you should use the color that would look good on the
+         * [backgroundColor]. For setting the selected segment's content color, use the
+         * [selectedContentColor] param.
+         * @param selectedContentColor Color of the segmented button's segment content when it
+         * is selected. For this value you should use the color that would look good on the
+         * [selectionIndicatorColor].
+         */
+        @Composable
+        fun colorScheme(
+            backgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+            selectionIndicatorColor: Color = MaterialTheme.colorScheme.background,
+            separatorColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+            contentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+            selectedContentColor: Color = MaterialTheme.colorScheme.onBackground,
+        ): SegmentedButtonColorScheme {
+            return SegmentedButtonColorScheme(
+                backgroundColor = backgroundColor,
+                selectionIndicatorColor = selectionIndicatorColor,
+                separatorColor = separatorColor,
+                contentColor = contentColor,
+                selectedContentColor = selectedContentColor
+            )
+        }
+    }
 }
 
 //endregion
@@ -590,7 +676,7 @@ private class SegmentedButtonScopeImpl<SegmentIdType> : SegmentedButtonScope<Seg
 
 @Preview
 @Composable
-private fun SegmentedButtons_Preview_IntTyped() {
+private fun SegmentedButton_Preview_IntTyped() {
 
     val selection = remember { mutableIntStateOf(0) }
 
@@ -626,7 +712,7 @@ private enum class PreviewSegment(val textDescription: String) {
 
 @Preview
 @Composable
-private fun SegmentedButtons_Preview_EnumTyped() {
+private fun SegmentedButton_Preview_EnumTyped() {
 
     val selection = remember { mutableStateOf(PreviewSegment.FIRST_SEGMENT) }
 
@@ -656,7 +742,7 @@ private fun SegmentedButtons_Preview_EnumTyped() {
 
 @Preview
 @Composable
-private fun SegmentedButtons_Preview_IconSegments() {
+private fun SegmentedButton_Preview_IconSegments() {
 
     val selection = remember { mutableIntStateOf(0) }
 
@@ -692,7 +778,7 @@ private fun SegmentedButtons_Preview_IconSegments() {
 
 @Preview
 @Composable
-private fun SegmentedButtons_Preview_Compact() {
+private fun SegmentedButton_Preview_Compact() {
 
     val selection = remember { mutableIntStateOf(0) }
 
@@ -712,6 +798,41 @@ private fun SegmentedButtons_Preview_Compact() {
                     segmentWithIcon(firstIcon, null, 0)
                     segmentWithIcon(secondIcon, null, 1)
                     segmentWithIcon(thirdIcon, null, 2)
+                }
+
+                Spacer(16.dp)
+
+                Text("Selected segment: ${selection.value}")
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun SegmentedButton_Preview_CustomColors() {
+
+    val selection = remember { mutableIntStateOf(0) }
+
+    AppTheme {
+        PreviewBox {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                SegmentedButton(
+                    selection = selection,
+                    modifier = Modifier.fillMaxWidth(),
+                    colorScheme = SegmentedButtonColorScheme(
+                        backgroundColor = MaterialTheme.colorScheme.secondary,
+                        selectionIndicatorColor = MaterialTheme.colorScheme.tertiary,
+                        separatorColor = MaterialTheme.colorScheme.onPrimary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedContentColor = MaterialTheme.colorScheme.onTertiary
+                    )
+                ) {
+                    segmentWithText("Lorem", 0)
+                    segmentWithText("Ipsum", 1)
+                    segmentWithText("Dolor", 2)
                 }
 
                 Spacer(16.dp)
