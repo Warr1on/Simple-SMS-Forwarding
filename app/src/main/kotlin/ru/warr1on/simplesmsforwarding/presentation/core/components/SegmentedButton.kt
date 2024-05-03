@@ -46,7 +46,7 @@ import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
  * things, and if you need more direct control over the selection (for example, if
  * your segmented button selection state is hoisted in the view model as a part of
  * a screen state data class, or if you want to be able to veto the selection change),
- * use the overload with the selectedSegment and onSegmentSelectionChange parameters.
+ * use the overload with the `selection` and `onSegmentSelectionChange` parameters.
  *
  * @param selection The selection param represents the currently selected section's ID
  * that is wrapped in a [MutableState]. The section ID could be of any type, but all of
