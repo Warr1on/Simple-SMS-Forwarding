@@ -53,7 +53,8 @@ import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
  * the sections should have the same ID type. Usually you'd want something like an enum
  * for the section identifiers, but something as simple as an integer could work as well.
  * The [MutableState]'s value will be updated automatically when the current selection changes.
- * @param modifier The segmented button's modifier
+ * @param modifier Segmented button's modifier
+ * @param colorScheme Segmented button's color scheme. See [SegmentedButtonColorScheme]
  * @param segments Here you should define your segments by using the [SegmentedButtonScope]'s
  * functions
  */
@@ -92,7 +93,8 @@ fun <SegmentIdType> SegmentedButton(
  * segmented button would want to change. Will have a proposed segment's ID for the new selection
  * as the param. Here, usually you'd want to update the selection state, but if you want to veto
  * this change, then you can also just do nothing with the new value.
- * @param modifier The segmented button's modifier
+ * @param modifier Segmented button's modifier
+ * @param colorScheme Segmented button's color scheme. See [SegmentedButtonColorScheme]
  * @param segments Here you should define your segments by using the [SegmentedButtonScope]'s
  * functions
  */
@@ -294,7 +296,6 @@ private fun <T> ButtonSegment(
     selectedContentColor: Color
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val colorScheme = MaterialTheme.colorScheme
 
     val hasIconAndText = remember(segmentData) {
         (segmentData.text != null)
