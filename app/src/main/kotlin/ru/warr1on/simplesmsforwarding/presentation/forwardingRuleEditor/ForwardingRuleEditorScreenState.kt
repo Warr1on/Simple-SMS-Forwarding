@@ -19,7 +19,8 @@ data class ForwardingRuleEditorScreenState(
     val messageTypeTextFieldState: TextFieldState,
     val addressesBlockState: AddressesBlockState,
     val filtersBlockState: FiltersBlockState,
-    val addNewAddressDialogState: AddNewAddressDialogState
+    val addNewAddressDialogState: AddNewAddressDialogState,
+    val filterEditorDialogState: FilterEditorDialogState
 ) {
 
     /**
@@ -59,15 +60,15 @@ data class ForwardingRuleEditorScreenState(
     /**
      * State of the "add new phone address" dialog
      *
-     * @see Showing
-     * @see NotShowing
+     * @see Displayed
+     * @see NotDisplayed
      */
     sealed interface AddNewAddressDialogState {
 
         /**
          * "Add new phone address" dialog is currently not shown
          */
-        data object NotShowing : AddNewAddressDialogState
+        data object NotDisplayed : AddNewAddressDialogState
 
         /**
          * "Add new phone address" dialog is currently shown
@@ -76,9 +77,21 @@ data class ForwardingRuleEditorScreenState(
          * @param canAddCurrentInputAsAddress Signals whether the current text
          * field input can be added to the list of addresses for this rule
          */
-        data class Showing(
+        data class Displayed(
             val textFieldState: TextFieldState,
             val canAddCurrentInputAsAddress: Boolean
         ) : AddNewAddressDialogState
+    }
+
+    sealed interface FilterEditorDialogState {
+
+        data object NotDisplayed : FilterEditorDialogState
+
+        data class Displayed(
+            val textFieldState: TextFieldState,
+            val filterTypeSelection: PresentationModel.ForwardingFilter.FilterType,
+            val ignoresCaseToggleState: Boolean,
+            val canAddCurrentInputAsFilter: Boolean
+        ) : FilterEditorDialogState
     }
 }

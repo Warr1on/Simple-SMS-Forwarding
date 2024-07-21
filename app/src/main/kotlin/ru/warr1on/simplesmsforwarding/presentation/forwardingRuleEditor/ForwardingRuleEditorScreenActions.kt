@@ -1,6 +1,8 @@
 package ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor
 
 import androidx.compose.runtime.Immutable
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel.*
 
 /**
  * A composite data class that contains all of the possible
@@ -18,8 +20,8 @@ data class ForwardingRuleEditorScreenActions(
     val messageTypeKeyTextFieldActions: TextFieldActions,
     val addressesComponentActions: AddressesComponentActions,
     val filtersComponentActions: FiltersComponentActions,
-    val addNewAddressesDialogActions: AddNewAddressDialogActions
-
+    val addNewAddressesDialogActions: AddNewAddressDialogActions,
+    val filterEditorDialogActions: FilterEditorDialogActions
 ) {
     /**
      * Actions for the text field in a forwarding rule editor
@@ -77,6 +79,15 @@ data class ForwardingRuleEditorScreenActions(
     data class AddNewAddressDialogActions(
         val onTextInputRequest: (proposedNewText: String) -> Unit,
         val onAddNewAddressRequest: () -> Unit,
+        val onDialogDismissed: () -> Unit
+    )
+
+    @Immutable
+    data class FilterEditorDialogActions(
+        val onFilterTypeSelectionChangeRequest: (newSelection: ForwardingFilter.FilterType) -> Unit,
+        val onIgnoresCaseSelectionChangeRequest: (newSelection: Boolean) -> Unit,
+        val onTextInputRequest: (proposedNewText: String) -> Unit,
+        val onSaveFilterRequest: () -> Unit,
         val onDialogDismissed: () -> Unit
     )
 }

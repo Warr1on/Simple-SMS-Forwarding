@@ -7,10 +7,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.warr1on.simplesmsforwarding.domain.model.filtering.FilterType
 import ru.warr1on.simplesmsforwarding.domain.model.filtering.ForwardingRule
 import ru.warr1on.simplesmsforwarding.domain.repositories.ForwardingRulesRepository
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.*
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.*
+import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
+import java.util.UUID
 
 /**
  * A view model for the forwarding rule editor screen
@@ -98,7 +101,8 @@ class ForwardingRuleEditorViewModel(
             messageTypeTextFieldState = emptyTextFieldState(),
             addressesBlockState = AddressesBlockState(addresses = emptyList()),
             filtersBlockState = FiltersBlockState(filters = emptyList()),
-            addNewAddressDialogState = AddNewAddressDialogState.NotShowing
+            addNewAddressDialogState = AddNewAddressDialogState.NotDisplayed,
+            filterEditorDialogState = FilterEditorDialogState.NotDisplayed
         )
     }
 
@@ -119,14 +123,22 @@ class ForwardingRuleEditorViewModel(
         )
 
         val filtersComponentActions = FiltersComponentActions(
-            onAddNewFilter = {}, //TODO
-            onRemoveFilter = { filterID ->  } //TODO
+            onAddNewFilter = { onAddNewFilterRequest() },
+            onRemoveFilter = { filterID -> onRemoveFilterRequest(filterID) }
         )
 
         val addNewAddressDialogActions = AddNewAddressDialogActions(
             onTextInputRequest = { proposedNewText -> onPhoneAddressInputChangeRequest(proposedNewText) },
-            onAddNewAddressRequest = { onAddPhoneAddressToRule() },
+            onAddNewAddressRequest = { addPhoneAddressFromNewPhoneAddressDialogInputs() },
             onDialogDismissed = { onAddNewAddressDialogDismissal() }
+        )
+
+        val filterEditorDialogActions = FilterEditorDialogActions(
+            onFilterTypeSelectionChangeRequest = { newSelection -> onFilterEditorDialogFilterTypeSelectionChangeRequest(newSelection) },
+            onIgnoresCaseSelectionChangeRequest = { newSelection -> onFilterEditorCaseToggleSwitchRequest(newSelection) },
+            onTextInputRequest = { proposedNewText -> onFilterEditorDialogTextChangeRequest(proposedNewText) },
+            onSaveFilterRequest = { addFilterFromFilterEditorDialogInputs() },
+            onDialogDismissed = { onFilterEditorDialogDismissal() }
         )
 
         return ForwardingRuleEditorScreenActions(
@@ -134,7 +146,8 @@ class ForwardingRuleEditorViewModel(
             messageTypeKeyTextFieldActions = messageTypeKeyTextFieldActions,
             addressesComponentActions = addressesComponentActions,
             filtersComponentActions = filtersComponentActions,
-            addNewAddressesDialogActions = addNewAddressDialogActions
+            addNewAddressesDialogActions = addNewAddressDialogActions,
+            filterEditorDialogActions = filterEditorDialogActions
         )
     }
 
@@ -236,7 +249,7 @@ class ForwardingRuleEditorViewModel(
      */
     private fun onOpenAddNewAddressDialogRequest() {
         _screenState.update { it.copy(
-            addNewAddressDialogState = AddNewAddressDialogState.Showing(
+            addNewAddressDialogState = AddNewAddressDialogState.Displayed(
                 textFieldState = emptyTextFieldState(),
                 canAddCurrentInputAsAddress = false
             )
@@ -253,6 +266,45 @@ class ForwardingRuleEditorViewModel(
                 addresses = buildList {
                     addAll(it.addressesBlockState.addresses)
                     remove(address)
+                }
+            )
+        ) }
+    }
+
+    //endregion
+
+    //region Behavior: filters component
+
+    private fun onAddNewFilterRequest() {
+//        val filterEditorDialogState = FilterEditorDialogState.Displayed(
+//            textFieldState = emptyTextFieldState(),
+//            filterTypeSelection = PresentationModel.ForwardingFilter.FilterType.INCLUDE,
+//            ignoresCaseToggleState = false,
+//            canAddCurrentInputAsFilter = false
+//        ).let {
+//            it.copy(
+//                textFieldState = it.textFieldState.copy(
+//                    supportingText = filterEditorDialogSupportingText(dialogState = it)
+//                )
+//            )
+//        }
+
+        _screenState.update { it.copy(
+            filterEditorDialogState = FilterEditorDialogState.Displayed(
+                textFieldState = emptyTextFieldState(),
+                filterTypeSelection = PresentationModel.ForwardingFilter.FilterType.INCLUDE,
+                ignoresCaseToggleState = false,
+                canAddCurrentInputAsFilter = false
+            )
+        ) }
+    }
+
+    private fun onRemoveFilterRequest(filterID: String) {
+        _screenState.update { state -> state.copy(
+            filtersBlockState = state.filtersBlockState.copy(
+                filters = buildList {
+                    addAll(state.filtersBlockState.filters)
+                    filter { it.id != filterID }
                 }
             )
         ) }
@@ -283,7 +335,7 @@ class ForwardingRuleEditorViewModel(
         val isError = inputIsBlank || inputDuplicatesAlreadyAddedAddress
 
         _screenState.update { it.copy(
-            addNewAddressDialogState = AddNewAddressDialogState.Showing(
+            addNewAddressDialogState = AddNewAddressDialogState.Displayed(
                 textFieldState = TextFieldState(
                     text = proposedNewText,
                     isError = isError,
@@ -298,10 +350,10 @@ class ForwardingRuleEditorViewModel(
      * Called when the user wants to add a new address from the
      * "add new phone address" dialog
      */
-    private fun onAddPhoneAddressToRule() {
+    private fun addPhoneAddressFromNewPhoneAddressDialogInputs() {
 
         val dialogState = _screenState.value.addNewAddressDialogState
-        if (dialogState !is AddNewAddressDialogState.Showing) { return }
+        if (dialogState !is AddNewAddressDialogState.Displayed) { return }
         val phoneAddress = dialogState.textFieldState.text
         if (!canAddPhoneAddressToRule(phoneAddress)) { return }
 
@@ -322,7 +374,102 @@ class ForwardingRuleEditorViewModel(
      */
     private fun onAddNewAddressDialogDismissal() {
         _screenState.update { it.copy(
-            addNewAddressDialogState = AddNewAddressDialogState.NotShowing
+            addNewAddressDialogState = AddNewAddressDialogState.NotDisplayed
+        ) }
+    }
+
+    //endregion
+
+    //region Behavior: filter editor dialog
+
+    private fun onFilterEditorDialogFilterTypeSelectionChangeRequest(
+        newSelection: PresentationModel.ForwardingFilter.FilterType
+    ) {
+        val dialogState =
+            (_screenState.value.filterEditorDialogState as? FilterEditorDialogState.Displayed) ?: return
+        val supportingText = filterEditorDialogSupportingText(dialogState, filterType = newSelection)
+
+        _screenState.update { it.copy(
+            filterEditorDialogState = dialogState.copy(
+                filterTypeSelection = newSelection,
+                textFieldState = dialogState.textFieldState.copy(
+                    supportingText = supportingText
+                )
+            )
+        ) }
+    }
+
+    private fun onFilterEditorCaseToggleSwitchRequest(
+        newSelection: Boolean
+    ) {
+        val dialogState =
+            (_screenState.value.filterEditorDialogState as? FilterEditorDialogState.Displayed) ?: return
+
+        _screenState.update { it.copy(
+            filterEditorDialogState = dialogState.copy(
+                ignoresCaseToggleState = newSelection
+            )
+        ) }
+    }
+
+    /**
+     * Called whenever the input text in the filtered text input text field
+     * inside the filter editor dialog wants to change
+     */
+    private fun onFilterEditorDialogTextChangeRequest(proposedNewText: String) {
+
+        val dialogState =
+            (_screenState.value.filterEditorDialogState as? FilterEditorDialogState.Displayed) ?: return
+
+        val isError = isFilterEditorDialogTextFieldInErrorState(dialogState, proposedNewText)
+        val supportingText = filterEditorDialogSupportingText(dialogState, proposedNewText = proposedNewText)
+
+        _screenState.update { it.copy(
+            filterEditorDialogState = dialogState.copy(
+                textFieldState = TextFieldState(
+                    text = proposedNewText,
+                    isError = isError,
+                    supportingText = supportingText
+                )
+            )
+        ) }
+    }
+
+    /**
+     * Called when the user wants to add a new filter from the filter editor dialog.
+     * Should form a forwarding filter from the current dialog inputs and add it to
+     * the rule.
+     */
+    private fun addFilterFromFilterEditorDialogInputs() {
+
+        val dialogState =
+            (_screenState.value.filterEditorDialogState as? FilterEditorDialogState.Displayed) ?: return
+
+        val filter = PresentationModel.ForwardingFilter(
+            id = UUID.randomUUID().toString(),
+            filterType = dialogState.filterTypeSelection,
+            ignoreCase = dialogState.ignoresCaseToggleState,
+            text = dialogState.textFieldState.text
+        )
+
+        _screenState.update { state -> state.copy(
+            filtersBlockState = state.filtersBlockState.copy(
+                filters = buildList {
+                    addAll(state.filtersBlockState.filters)
+                    add(filter)
+                }
+            )
+        ) }
+    }
+
+    /**
+     * Called whenever the filter editor dialog is dismissed.
+     * This should happen after the fact of dismissal, and here
+     * the dialog state would update accordingly to sync the state.
+     */
+    private fun onFilterEditorDialogDismissal() {
+        _screenState.update { it.copy(
+            filterEditorDialogState = FilterEditorDialogState.NotDisplayed
         ) }
     }
 
@@ -355,6 +502,60 @@ class ForwardingRuleEditorViewModel(
     private fun isPhoneAddressDuplicatesAlreadyAddedAddress(phoneAddress: String): Boolean {
         val currentlyAddedAddresses = _screenState.value.addressesBlockState.addresses
         return currentlyAddedAddresses.contains(phoneAddress)
+    }
+
+    /**
+     * Returns a supporting text that matches the state of the filter editor (displayed) dialog
+     *
+     * @param dialogState Current state of the displayed dialog
+     * @param filterType (Optional) Updated filter type. If present, the function will use this
+     * in determining the according supporting text. If not present, it will use the filter type
+     * from the current state.
+     * @param proposedNewText (Optional) Proposed new filter text. If present, the function will
+     * use this in determining the according supporting text. If not present, it will use the
+     * filter text from the current state.
+     */
+    private fun filterEditorDialogSupportingText(
+        dialogState: FilterEditorDialogState.Displayed,
+        filterType: PresentationModel.ForwardingFilter.FilterType? = null,
+        proposedNewText: String? = null
+    ): String {
+
+        val selectedFilterType = filterType ?: dialogState.filterTypeSelection
+        val isError = isFilterEditorDialogTextFieldInErrorState(dialogState, proposedNewText)
+        val caseText = when (dialogState.ignoresCaseToggleState) {
+            true -> "(ignoring case)"
+            false -> "(respecting case)"
+        }
+        val supportingText = if (isError) {
+            "Filter text cannot be blank"
+        } else {
+            when (selectedFilterType) {
+                PresentationModel.ForwardingFilter.FilterType.INCLUDE -> {
+                    "A message would pass this filter when the specified text $caseText is present in it"
+                }
+                PresentationModel.ForwardingFilter.FilterType.EXCLUDE -> {
+                    "A message would pass this filter when the specified text $caseText is NOT present in it"
+                }
+            }
+        }
+        return supportingText
+    }
+
+    /**
+     * Returns filter editor (displayed) dialog text field error state
+     *
+     * @param dialogState Current state of the displayed dialog
+     * @param proposedNewText (Optional) Proposed new filter text. If present, the function will
+     * use this in determining the according error state. If not present, it will use the
+     * filter text from the current state.
+     */
+    private fun isFilterEditorDialogTextFieldInErrorState(
+        dialogState: FilterEditorDialogState.Displayed,
+        proposedNewText: String? = null
+    ): Boolean {
+        val filterText = proposedNewText ?: dialogState.textFieldState.text
+        return filterText.isEmpty()
     }
 
     //endregion

@@ -29,15 +29,9 @@ import ru.warr1on.simplesmsforwarding.presentation.core.components.*
 import ru.warr1on.simplesmsforwarding.presentation.core.components.modal.ModalHostExperimental
 import ru.warr1on.simplesmsforwarding.presentation.core.theme.AppTheme
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.AddNewAddressDialogActions
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.AddressesComponentActions
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.FiltersComponentActions
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.TextFieldActions
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenActions.*
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.AddNewAddressDialogState
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.AddressesBlockState
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.FiltersBlockState
-import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.TextFieldState
+import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorScreenState.*
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ForwardingRuleEditorViewModel
 import ru.warr1on.simplesmsforwarding.presentation.forwardingRuleEditor.ui.components.*
 import ru.warr1on.simplesmsforwarding.presentation.shared.PresentationModel
@@ -120,6 +114,11 @@ private fun ForwardingRuleEditorLayout(
     ForwardingRuleEditorAddPhoneAddressDialog(
         state = screenState.addNewAddressDialogState,
         actions = actions.addNewAddressesDialogActions
+    )
+
+    ForwardingRuleEditorAddFilterDialog(
+        state = screenState.filterEditorDialogState,
+        actions = actions.filterEditorDialogActions
     )
 }
 
@@ -244,10 +243,12 @@ private fun LazyListScope.phoneAddressesComponent(
     }
 
     item(key = "add_address_button".hashCode()) {
-        AddPhoneAddressButton(
-            onAddAddressClicked = actions.onAddNewAddressRequest,
-            onAddFromKnownClicked = actions.onAddFromKnownRequest
-        )
+        AddButtonContainer {
+            ForwardingRuleEditorAddPhoneAddressButton(
+                onAddNewAddressClicked = actions.onAddNewAddressRequest,
+                onAddFromKnownClicked = actions.onAddFromKnownRequest
+            )
+        }
     }
 }
 
@@ -274,28 +275,29 @@ private fun LazyListScope.filtersComponent(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
+
+    item(key = "add_filters_button".hashCode()) {
+        AddButtonContainer {
+            ForwardingRuleEditorAddFilterButton(
+                onClick = actions.onAddNewFilter
+            )
+        }
+    }
 }
 
 /**
- * This dual-sectioned button will be displayed below the added phone addresses
- * or the no added addresses placeholder
+ * A container with the necessary spacing for the add-type buttons
  */
 @Composable
-private fun AddPhoneAddressButton(
-    onAddAddressClicked: () -> Unit,
-    onAddFromKnownClicked: () -> Unit,
-    modifier: Modifier = Modifier
+private fun AddButtonContainer(
+    button: @Composable () -> Unit
 ) {
     VerticalSpacer(height = 8.dp)
 
     Row {
         Spacer()
 
-        ForwardingRuleEditorAddPhoneAddressButton(
-            onAddNewAddressClicked = onAddAddressClicked,
-            onAddFromKnownClicked = onAddFromKnownClicked,
-            modifier = modifier
-        )
+        button()
 
         Spacer()
     }
@@ -434,7 +436,9 @@ private fun generatePreviewScreenState(): ForwardingRuleEditorScreenState {
         filters = filters
     )
 
-    val addNewAddressDialogState = AddNewAddressDialogState.NotShowing
+    val addNewAddressDialogState = AddNewAddressDialogState.NotDisplayed
+
+    val filterEditorDialogState = FilterEditorDialogState.NotDisplayed
 
     return ForwardingRuleEditorScreenState(
         screenTitle = "Rule editor",
@@ -442,7 +446,8 @@ private fun generatePreviewScreenState(): ForwardingRuleEditorScreenState {
         messageTypeTextFieldState = messageTypeKeyTextFieldState,
         addressesBlockState = addressesBlockState,
         filtersBlockState = filtersBlockState,
-        addNewAddressDialogState = addNewAddressDialogState
+        addNewAddressDialogState = addNewAddressDialogState,
+        filterEditorDialogState = filterEditorDialogState
     )
 }
 
@@ -452,7 +457,8 @@ private fun generatePreviewScreenActions(): ForwardingRuleEditorScreenActions {
          messageTypeKeyTextFieldActions = TextFieldActions {  },
          addressesComponentActions = AddressesComponentActions({}, {}, {}),
          filtersComponentActions = FiltersComponentActions({}, {}),
-         addNewAddressesDialogActions = AddNewAddressDialogActions({}, {}, {})
+         addNewAddressesDialogActions = AddNewAddressDialogActions({}, {}, {}),
+         filterEditorDialogActions = FilterEditorDialogActions({}, {}, {}, {}, {})
      )
 }
 

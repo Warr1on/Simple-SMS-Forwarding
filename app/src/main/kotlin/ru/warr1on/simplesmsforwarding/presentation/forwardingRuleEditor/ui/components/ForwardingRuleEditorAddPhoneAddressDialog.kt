@@ -31,7 +31,7 @@ fun ForwardingRuleEditorAddPhoneAddressDialog(
     state: AddNewAddressDialogState,
     actions: AddNewAddressDialogActions
 ) {
-    if (state is AddNewAddressDialogState.Showing) {
+    if (state is AddNewAddressDialogState.Displayed) {
         ModalPopup(
             onDismissed = { _, _ -> actions.onDialogDismissed() },
             applyImePadding = true
@@ -47,7 +47,7 @@ fun ForwardingRuleEditorAddPhoneAddressDialog(
 
 @Composable
 private fun AddPhoneAddressDialogContent(
-    state: AddNewAddressDialogState.Showing,
+    state: AddNewAddressDialogState.Displayed,
     actions: AddNewAddressDialogActions,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
@@ -159,13 +159,13 @@ private fun AddPhoneAddressDialogContent_Preview() {
 private fun ForwardingRuleEditorAddPhoneAddressDialog_Preview() {
 
     var state: AddNewAddressDialogState by remember {
-        mutableStateOf(AddNewAddressDialogState.NotShowing)
+        mutableStateOf(AddNewAddressDialogState.NotDisplayed)
     }
 
     val actions = remember {
         AddNewAddressDialogActions(
             onTextInputRequest = {
-                state = AddNewAddressDialogState.Showing(
+                state = AddNewAddressDialogState.Displayed(
                     textFieldState = ForwardingRuleEditorScreenState.TextFieldState(
                         text = it,
                         isError = false,
@@ -176,7 +176,7 @@ private fun ForwardingRuleEditorAddPhoneAddressDialog_Preview() {
             },
             onAddNewAddressRequest = {},
             onDialogDismissed = {
-                state = AddNewAddressDialogState.NotShowing
+                state = AddNewAddressDialogState.NotDisplayed
             }
         )
     }
@@ -202,8 +202,8 @@ private fun ForwardingRuleEditorAddPhoneAddressDialog_Preview() {
     }
 }
 
-private fun generatePreviewShownDialogState(): AddNewAddressDialogState.Showing {
-    return AddNewAddressDialogState.Showing(
+private fun generatePreviewShownDialogState(): AddNewAddressDialogState.Displayed {
+    return AddNewAddressDialogState.Displayed(
         textFieldState = ForwardingRuleEditorScreenState.TextFieldState(
             text = "",
             isError = false,
